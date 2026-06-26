@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>英検トレーナー</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #fff0f6 0%, #fff4e6 30%, #e7f5ff 65%, #ebfbee 100%);
+      font-family: 'Nunito', 'Hiragino Maru Gothic ProN', 'M PLUS Rounded 1c', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 16px 56px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    @keyframes popIn { from { opacity:0; transform:scale(0.9) } to { opacity:1; transform:scale(1) } }
+    @keyframes slideUp { from { opacity:0; transform:translateY(18px) scale(0.96) } to { opacity:1; transform:translateY(0) scale(1) } }
+    @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.45 } }
+    @keyframes bounce { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-6px) } }
+    button { font-family: 'Nunito', 'Hiragino Maru Gothic ProN', 'M PLUS Rounded 1c', sans-serif; cursor: pointer; }
+    .section { width: 100%; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; }
+    .hidden { display: none !important; }
+    .done-msg { margin-top: 24px; font-size: 20px; font-weight: 900; color: #fa5252; animation: bounce 0.6s infinite; text-align: center; }
+    .over-msg { font-size: 14px; font-weight: 800; color: #fa5252; animation: pulse 0.9s infinite; }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient blobs -->
+  <div id="blob1" style="position:fixed;top:-100px;left:-100px;width:340px;height:340px;border-radius:50%;opacity:0.07;filter:blur(60px);pointer-events:none;transition:background 0.4s;background:#40c057;"></div>
+  <div style="position:fixed;bottom:-90px;right:-90px;width:300px;height:300px;border-radius:50%;background:#228be6;opacity:0.06;filter:blur(50px);pointer-events:none;"></div>
+
+  <!-- Tab bar -->
+  <div style="display:flex;gap:6px;background:rgba(255,255,255,0.72);backdrop-filter:blur(8px);padding:6px;border-radius:100px;box-shadow:0 4px 20px rgba(0,0,0,0.07);margin-bottom:26px;position:relative;z-index:2;">
+    <button id="tabW" onclick="setMode('writing')" style="background:#fff;color:#333;border:none;border-radius:100px;padding:9px 22px;font-size:14px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.1);transition:all 0.2s;">✍️ Writing</button>
+    <button id="tabS" onclick="setMode('speaking')" style="background:transparent;color:#999;border:none;border-radius:100px;padding:9px 22px;font-size:14px;font-weight:800;box-shadow:none;transition:all 0.2s;">🎤 Speaking</button>
+  </div>
+
+  <!-- ── WRITING SECTION ── -->
+  <div id="secW" class="section">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:4px;color:#c4c4cc;text-transform:uppercase;margin-bottom:6px;">英検 WRITING PRACTICE</div>
+      <h1 id="wH1" style="margin:0;font-size:clamp(28px,5.5vw,46px);font-weight:900;letter-spacing:-0.5px;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;transition:background 0.4s;"></h1>
+      <div id="wSub" style="font-size:13px;color:#bbb;margin-top:5px;font-weight:700;"></div>
+    </div>
+
+    <!-- Level pills 3x2 -->
+    <div id="wPills" style="display:grid;grid-template-columns:repeat(3,auto);gap:8px;justify-content:center;margin-bottom:26px;"></div>
+
+    <!-- Topic card -->
+    <div id="wCard" style="background:#fff;border-radius:24px;padding:30px 34px;max-width:580px;width:100%;margin-bottom:4px;position:relative;overflow:hidden;">
+      <div id="wBar" style="position:absolute;top:0;left:0;right:0;height:5px;border-radius:24px 24px 0 0;"></div>
+      <div id="wTopicLabel" style="font-size:11px;font-weight:800;letter-spacing:4px;text-transform:uppercase;margin-bottom:16px;">📝 Topic</div>
+      <div id="wTopicText" style="font-size:clamp(15px,2.5vw,20px);line-height:1.75;color:#222;font-weight:700;margin-bottom:20px;"></div>
+      <div id="wPoints" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      <div id="wMins" style="margin-top:16px;font-size:12px;color:#bbb;font-weight:600;"></div>
+    </div>
+
+    <!-- Ring timer -->
+    <div id="wRing" style="width:140px;height:140px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:24px 0 4px;transition:background 0.6s linear;">
+      <div style="width:116px;height:116px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div id="wTimeText" style="font-size:30px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:1px;line-height:1;color:#222;transition:color 0.3s;"></div>
+        <div id="wStatus" style="font-size:10px;color:#bbb;font-weight:700;letter-spacing:2px;margin-top:4px;text-transform:uppercase;"></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:22px 0 16px;">
+      <button id="wStartBtn" onclick="wStart()" class="hidden"></button>
+      <button id="wPauseBtn" onclick="wPause()" class="hidden"></button>
+      <button id="wResetBtn" onclick="wReset()" class="hidden" style="background:#fff;color:#aaa;border:2px solid #e0e0e0;border-radius:100px;padding:11px 24px;font-size:14px;font-weight:700;">↺ リセット</button>
+    </div>
+    <button id="wNextBtn" onclick="wNewTopic()" style="border-radius:100px;padding:12px 32px;font-size:14px;font-weight:800;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">🎲 次のお題へ</button>
+    <div id="wDone" class="hidden done-msg">⏰ Time's Up! お疲れ様でした！</div>
+  </div>
+
+  <!-- ── SPEAKING SECTION ── -->
+  <div id="secS" class="section hidden">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:4px;color:#c4c4cc;text-transform:uppercase;margin-bottom:6px;">英検 SPEAKING PRACTICE</div>
+      <h1 id="sH1" style="margin:0;font-size:clamp(28px,5.5vw,46px);font-weight:900;letter-spacing:-0.5px;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;transition:background 0.4s;"></h1>
+      <div id="sSub" style="font-size:13px;color:#bbb;margin-top:5px;font-weight:700;"></div>
+    </div>
+
+    <!-- Level pills 3x2 -->
+    <div id="sPills" style="display:grid;grid-template-columns:repeat(3,auto);gap:8px;justify-content:center;margin-bottom:26px;"></div>
+
+    <!-- Question card -->
+    <div id="sCard" style="background:#fff;border-radius:22px;padding:28px 32px 24px;max-width:580px;width:100%;margin-bottom:20px;position:relative;overflow:hidden;">
+      <div id="sBar" style="position:absolute;top:0;left:0;right:0;height:5px;"></div>
+      <div id="sQLabel" style="font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;">🎤 Question</div>
+      <div id="sQText" style="font-size:clamp(17px,2.8vw,22px);line-height:1.8;color:#222;font-weight:700;margin-bottom:18px;"></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:13px;color:#bbb;font-weight:700;white-space:nowrap;">💡ヒント:</span>
+        <div id="sHints" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      </div>
+    </div>
+
+    <!-- Stopwatch card -->
+    <div style="background:#fff;border-radius:22px;padding:28px 32px 26px;max-width:580px;width:100%;margin-bottom:20px;box-shadow:0 4px 24px rgba(0,0,0,0.06);border:1.5px solid #efefef;display:flex;flex-direction:column;align-items:center;gap:14px;">
+      <div id="sBig" style="font-size:clamp(56px,15vw,92px);font-weight:900;font-variant-numeric:tabular-nums;line-height:1;transition:color 0.25s;color:#40c057;">00</div>
+      <div style="width:100%;max-width:280px;height:6px;background:#f0f0f0;border-radius:100px;overflow:hidden;">
+        <div id="sBarFill" style="height:100%;width:0%;border-radius:100px;transition:width 0.2s linear,background 0.3s;background:#40c057;"></div>
+      </div>
+      <div id="sTarget" style="font-size:12px;color:#ccc;font-weight:700;margin-top:-6px;"></div>
+      <div style="display:flex;gap:10px;margin-top:2px;">
+        <button id="sStartBtn" onclick="sStart()"></button>
+        <button id="sStopBtn" onclick="sStop()" class="hidden" style="background:linear-gradient(135deg,#c92a2a,#fa5252);color:#fff;border:none;border-radius:100px;padding:12px 28px;font-size:14px;font-weight:800;letter-spacing:0.3px;box-shadow:0 4px 18px #fa525255;">■ ストップ</button>
+        <button id="sResetBtn" onclick="sReset()" class="hidden" style="background:#fff;color:#aaa;border:2px solid #e0e0e0;border-radius:100px;padding:11px 24px;font-size:14px;font-weight:700;">↺ リセット</button>
+      </div>
+      <div id="sOver" class="hidden over-msg">⏰ 時間を超えました！</div>
+    </div>
+
+    <button id="sNextBtn" onclick="sNewQ()" style="border-radius:100px;padding:12px 32px;font-size:14px;font-weight:800;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(0,0,0,0.05);">🎲 次の問題へ</button>
+  </div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────
+const LEVELS = ["3級","準2級","準2級+","2級","準1級","1級"];
+const LC = {
+  "3級":   {color:"#ff6b9d", bg:"#fff0f6", dark:"#c9356b", emoji:"🌸"},
+  "準2級": {color:"#ff922b", bg:"#fff4e6", dark:"#c4600a", emoji:"🔥"},
+  "準2級+":{color:"#f59f00", bg:"#fff9db", dark:"#b36f00", emoji:"⭐"},
+  "2級":   {color:"#40c057", bg:"#ebfbee", dark:"#1e7e34", emoji:"🌿"},
+  "準1級": {color:"#228be6", bg:"#e7f5ff", dark:"#0d5aa7", emoji:"💎"},
+  "1級":   {color:"#7950f2", bg:"#f3f0ff", dark:"#4c2fa1", emoji:"👑"},
+};
+const WMIN = {"3級":15,"準2級":20,"準2級+":25,"2級":25,"準1級":30,"1級":35};
+
+const TOPICS = {
+  "3級": [
+    { topic:"Which season do you like the best?", points:["Weather","Activities","Food"] },
+    { topic:"Do you like studying English?", points:["Future","Fun","Travel"] },
+    { topic:"Which do you like better, summer vacation or winter vacation?", points:["Weather","Events","Family"] },
+    { topic:"Do you enjoy playing sports?", points:["Health","Friends","Fun"] },
+    { topic:"Which do you prefer, reading books or watching movies?", points:["Story","Time","Imagination"] },
+    { topic:"Do you like cooking?", points:["Taste","Family","Skill"] },
+    { topic:"Which is better, a town with many shops or a quiet town?", points:["Convenience","Nature","Cost"] },
+    { topic:"Do you want to study abroad someday?", points:["Language","Culture","Experience"] },
+  ],
+  "準2級": [
+    { topic:"Do you think families should make time to play sports together?", points:["Health","Bonding","Time"] },
+    { topic:"Do you think it is good for children to decide what time they go to bed every day?", points:["Responsibility","Health","Freedom"] },
+    { topic:"Do you think it is a good idea for people to take notes on their smartphones?", points:["Convenience","Memory","Battery"] },
+    { topic:"Do you think students should do volunteer work during their vacations?", points:["Experience","Society","Free time"] },
+    { topic:"Do you think it is better to eat breakfast every morning?", points:["Health","Energy","Time"] },
+    { topic:"Do you think people should use bicycles more often?", points:["Environment","Health","Safety"] },
+    { topic:"Do you think students should join a club at school?", points:["Friends","Skills","Study time"] },
+    { topic:"Do you think it is important to keep a daily diary?", points:["Memory","Writing","Habit"] },
+  ],
+  "準2級+": [
+    { topic:"Do you think it is better for students to study with friends than alone?", points:["Motivation","Focus","Teaching"] },
+    { topic:"Do you think shopping online is better than shopping in stores?", points:["Convenience","Price","Experience"] },
+    { topic:"Do you think people should use public transportation more often?", points:["Environment","Cost","Convenience"] },
+    { topic:"Do you think it is important for young people to do volunteer work?", points:["Society","Skills","Time"] },
+    { topic:"Do you think reading e-books is better than reading paper books?", points:["Portability","Eyes","Cost"] },
+    { topic:"Do you think schools should have more events like sports days?", points:["Teamwork","Memories","Preparation"] },
+    { topic:"Do you think it is good for students to have a part-time job?", points:["Money","Experience","Study"] },
+    { topic:"Do you think Japan should welcome more foreign tourists?", points:["Economy","Culture","Manners"] },
+  ],
+  "2級": [
+    { topic:"Today, some companies use AI tools in their work. Do you think the number of such companies will increase in the future?", points:["Efficiency","Jobs","Cost"] },
+    { topic:"Some people say that robots will be used in more areas of daily life. Do you agree?", points:["Convenience","Cost","Employment"] },
+    { topic:"Do you think electric vehicles will become more common in Japan?", points:["Environment","Cost","Infrastructure"] },
+    { topic:"Do you think more companies should allow their employees to telework?", points:["Productivity","Commuting","Communication"] },
+    { topic:"Some companies use drones to deliver packages. Do you think drone delivery will become more popular?", points:["Speed","Safety","Cost"] },
+    { topic:"Do you think bike-sharing services are good for cities?", points:["Environment","Health","Traffic"] },
+    { topic:"Do you think it is important to protect traditional arts and crafts?", points:["Culture","Tourism","Cost"] },
+    { topic:"Do you think Japan should become a more paperless society?", points:["Environment","Convenience","Security"] },
+    { topic:"Do you think schools should make more use of online education?", points:["Access","Cost","Motivation"] },
+    { topic:"Do you think installing more solar panels is a good idea?", points:["Environment","Cost","Energy"] },
+  ],
+  "準1級": [
+    { topic:"Agree or disagree: Schools should pay teachers higher salaries.", points:["Education quality","Budget","Recruitment"] },
+    { topic:"Agree or disagree: Local governments should do more to attract young residents.", points:["Economy","Services","Population"] },
+    { topic:"Agree or disagree: Cashless payments will replace cash in Japan.", points:["Convenience","Security","Inclusion"] },
+    { topic:"Agree or disagree: More Japanese students should study overseas.", points:["Language","Cost","Global skills"] },
+    { topic:"Agree or disagree: Public hospitals should receive more government funding.", points:["Healthcare","Taxes","Access"] },
+    { topic:"Agree or disagree: Companies should keep telework rates high.", points:["Productivity","Work-life balance","Teamwork"] },
+    { topic:"Agree or disagree: Renewable energy can meet Japan's future needs.", points:["Sustainability","Cost","Reliability"] },
+    { topic:"Agree or disagree: Tourism brings more benefits than problems to local communities.", points:["Economy","Culture","Environment"] },
+  ],
+  "1級": [
+    { topic:"Agree or disagree: Economic growth should take priority over environmental protection.", points:["Sustainability","Development","Policy"] },
+    { topic:"Agree or disagree: Artificial intelligence will benefit humanity more than it harms it.", points:["Labor","Ethics","Innovation"] },
+    { topic:"Agree or disagree: Globalization undermines national cultures.", points:["Identity","Trade","Diversity"] },
+    { topic:"Agree or disagree: A universal basic income should be introduced in developed nations.", points:["Poverty","Automation","Incentives"] },
+    { topic:"Agree or disagree: Nuclear power is essential for a sustainable future.", points:["Energy","Safety","Climate"] },
+    { topic:"Agree or disagree: Public funding for space exploration is justified.", points:["Science","Cost","Survival"] },
+    { topic:"Agree or disagree: Democracy is the most effective form of government.", points:["Freedom","Efficiency","Stability"] },
+    { topic:"Agree or disagree: Capital punishment should be abolished.", points:["Human rights","Deterrence","Justice"] },
+  ],
+};
+
+const SPEAKING = {
+  "3級": { format:"Q&A", targetSec:30, questions:[
+    { q:"What do you usually do on Sundays?", hints:["習慣","場所","誰と"] },
+    { q:"What is your favorite subject at school?", hints:["教科","理由","得意"] },
+    { q:"What sport do you like to watch or play?", hints:["スポーツ","頻度","楽しさ"] },
+    { q:"What did you do last weekend?", hints:["行動","場所","感想"] },
+    { q:"What do you want to do this summer?", hints:["予定","場所","理由"] },
+    { q:"What is your favorite food?", hints:["食べ物","味","思い出"] },
+    { q:"Where do you want to go on a trip?", hints:["場所","理由","やりたいこと"] },
+    { q:"What time do you usually get up in the morning?", hints:["時間","理由","朝の習慣"] },
+  ]},
+  "準2級": { format:"Q&A", targetSec:60, questions:[
+    { q:"It is common for people to send messages online. Do you think sending messages is better than talking on the phone?", hints:["手軽さ","気持ち","誤解"] },
+    { q:"Many people enjoy taking photos with smartphones. Do you think the number of such people will increase in the future?", hints:["手軽さ","SNS","思い出"] },
+    { q:"Nowadays, some students study English online. Do you think more students will do so in the future?", hints:["便利さ","費用","集中"] },
+    { q:"These days, many shops sell ready-made meals. Do you think more people will buy them in the future?", hints:["忙しさ","価格","健康"] },
+    { q:"Many people visit foreign countries for sightseeing. Do you think that is a good way to learn about other cultures?", hints:["体験","言語","費用"] },
+    { q:"Today, many free apps are available. Do you think these apps make our lives better?", hints:["便利さ","広告","依存"] },
+    { q:"Nowadays, some restaurants stay open 24 hours. Do you think the number of such restaurants will increase?", hints:["需要","人手","コスト"] },
+    { q:"These days, more people work from home. Do you think the number of such people will increase in the future?", hints:["効率","通勤","孤独"] },
+  ]},
+  "準2級+": { format:"Q&A", targetSec:60, questions:[
+    { q:"Some people say that students should use tablets instead of textbooks. What do you think about that?", hints:["重さ","費用","目"] },
+    { q:"Do you think it is a good idea for cities to build more parks?", hints:["健康","環境","費用"] },
+    { q:"Some people say that online lessons are as good as classroom lessons. What do you think about that?", hints:["便利","集中","交流"] },
+    { q:"Do you think people should try to reduce food waste?", hints:["環境","費用","習慣"] },
+    { q:"Some people say that school uniforms are good for students. What do you think about that?", hints:["平等","自由","費用"] },
+    { q:"Do you think more people will use electric bicycles in the future?", hints:["環境","体力","価格"] },
+    { q:"Some people say that libraries are still important today. What do you think about that?", hints:["学習","無料","静か"] },
+    { q:"Do you think it is good for high school students to study abroad?", hints:["語学","文化","費用"] },
+  ]},
+  "2級": { format:"スピーチ", targetSec:60, questions:[
+    { q:"Some people say that AI will take over our jobs. What do you think about that?", hints:["automation","new jobs","creativity"] },
+    { q:"Some people say that high schools should teach more about money and finance. What do you think about that?", hints:["independence","future","skills"] },
+    { q:"Some people say that robots will be used to teach and educate children. What do you think about that?", hints:["efficiency","human touch","cost"] },
+    { q:"Some people say that online games have a bad influence on young children. What do you think about that?", hints:["health","social skills","fun"] },
+    { q:"Some people say that people today pay too much attention to their smartphones. What do you think about that?", hints:["communication","health","convenience"] },
+    { q:"Some people say that people should read more paper books instead of e-books. What do you think about that?", hints:["eyesight","memory","portability"] },
+    { q:"Some people say that social media is harmful to mental health. What do you think about that?", hints:["comparison","connection","information"] },
+    { q:"Some people say that we need to be better prepared for natural disasters. What do you think about that?", hints:["safety","cost","awareness"] },
+    { q:"Some people say that schools give too much homework to students. What do you think about that?", hints:["learning","free time","stress"] },
+    { q:"Some people say that coffee shops should not use disposable plastic straws. What do you think about that?", hints:["environment","convenience","cost"] },
+  ]},
+  "準1級": { format:"スピーチ", targetSec:90, questions:[
+    { q:"Some people say that nuclear power should be phased out in Japan. What do you think about that?", hints:["safety","energy needs","climate"] },
+    { q:"Some people say that the government should do more to support working parents. What do you think about that?", hints:["childcare","economy","equality"] },
+    { q:"Some people say that Japan should accept more foreign workers. What do you think about that?", hints:["labor shortage","economy","society"] },
+    { q:"Some people say that cashless payment will completely replace cash. What do you think about that?", hints:["convenience","security","inclusion"] },
+    { q:"Some people say that people rely too much on online information. What do you think about that?", hints:["accuracy","convenience","thinking"] },
+    { q:"Some people say that companies should focus more on protecting the environment. What do you think about that?", hints:["sustainability","cost","image"] },
+    { q:"Some people say that university education should be free. What do you think about that?", hints:["access","taxes","value"] },
+    { q:"Some people say that remote work will become standard in the future. What do you think about that?", hints:["productivity","balance","teamwork"] },
+  ]},
+  "1級": { format:"ディベート", targetSec:120, questions:[
+    { q:"Should economic growth take priority over environmental protection?", hints:["sustainability","development","policy"] },
+    { q:"Is artificial intelligence a greater opportunity than a threat to society?", hints:["innovation","employment","control"] },
+    { q:"Should developed nations do more to reduce global inequality?", hints:["ethics","resources","politics"] },
+    { q:"Is globalization beneficial for the modern world?", hints:["trade","culture","inequality"] },
+    { q:"Should governments invest more heavily in space exploration?", hints:["science","cost","survival"] },
+    { q:"Can democracy survive the challenges of the digital age?", hints:["misinformation","participation","regulation"] },
+    { q:"Should nuclear weapons be completely abolished?", hints:["security","deterrence","trust"] },
+    { q:"Is capitalism compatible with environmental sustainability?", hints:["growth","regulation","innovation"] },
+  ]},
+};
+
+// ── HELPERS ─────────────────────────────────────────────────────────
+function pad2(n) { return String(n).padStart(2, "0"); }
+function formatTime(s) { return pad2(Math.floor(s/60)) + ":" + pad2(s%60); }
+function formatSW(ms) { const t=Math.floor(ms/1000), m=Math.floor(t/60), s=t%60; return m>0 ? m+":"+pad2(s) : pad2(s); }
+function formatTarget(sec) { if(sec<60) return sec+"秒"; const m=Math.floor(sec/60), s=sec%60; return s===0 ? m+"分" : m+"分"+s+"秒"; }
+function pick(arr, excludeVal) {
+  const pool = excludeVal != null ? arr.filter(x => (x.topic||x.q) !== excludeVal) : arr;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+function chipStyle(c, i) {
+  const alphas = ["18","28","38"];
+  return `font-size:12px;padding:5px 14px;background:${c.color}${alphas[i%3]};border:1.5px solid ${c.color}44;border-radius:100px;color:${c.dark};font-weight:700;letter-spacing:0.3px;`;
+}
+function primaryBtnStyle(color, dark, big) {
+  return `background:linear-gradient(135deg,${dark},${color});color:#fff;border:none;border-radius:100px;padding:${big?"12px 32px":"12px 28px"};font-size:${big?15:14}px;font-weight:800;letter-spacing:${big?1:0.3}px;box-shadow:0 4px 18px ${color}55;transition:all 0.15s;`;
+}
+function dashedBtnStyle(c) {
+  return `background:#fff;color:${c.color};border:2px dashed ${c.color}88;border-radius:100px;padding:12px 32px;font-size:14px;font-weight:800;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(0,0,0,0.05);`;
+}
+
+// ── STATE ────────────────────────────────────────────────────────────
+const state = {
+  mode: "writing",
+  wLevel: "2級", wTopic: null, wTimeLeft: 0, wRunning: false,
+  sLevel: "2級", sQ: null, sRunning: false, sElapsed: 0,
+};
+let wTimer = null, sTimer = null, sBase = 0;
+
+// ── INIT ─────────────────────────────────────────────────────────────
+function init() {
+  state.wTopic = pick(TOPICS[state.wLevel]);
+  state.wTimeLeft = WMIN[state.wLevel] * 60;
+  state.sQ = pick(SPEAKING[state.sLevel].questions);
+  renderAll();
+}
+
+// ── MODE ─────────────────────────────────────────────────────────────
+function setMode(m) {
+  state.mode = m;
+  const isW = m === "writing";
+  document.getElementById("secW").classList.toggle("hidden", !isW);
+  document.getElementById("secS").classList.toggle("hidden", isW);
+  const activeTabStyle = "background:#fff;color:#333;border:none;border-radius:100px;padding:9px 22px;font-size:14px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.1);transition:all 0.2s;";
+  const inactiveTabStyle = "background:transparent;color:#999;border:none;border-radius:100px;padding:9px 22px;font-size:14px;font-weight:800;box-shadow:none;transition:all 0.2s;";
+  document.getElementById("tabW").style.cssText = isW ? activeTabStyle : inactiveTabStyle;
+  document.getElementById("tabS").style.cssText = isW ? inactiveTabStyle : activeTabStyle;
+}
+
+// ── WRITING RENDER ───────────────────────────────────────────────────
+function renderWriting() {
+  const lv = state.wLevel, c = LC[lv];
+  const total = WMIN[lv] * 60, t = state.wTimeLeft;
+  const pct = t / total;
+  const isLow = t < 60, isMid = t < 180 && t >= 60, isDone = t === 0;
+  const ringColor = (isDone || isLow) ? "#fa5252" : isMid ? "#ff922b" : c.color;
+
+  // Blob
+  document.getElementById("blob1").style.background = c.color;
+
+  // Header
+  document.getElementById("wH1").style.backgroundImage = `linear-gradient(135deg, ${c.dark}, ${c.color})`;
+  document.getElementById("wH1").textContent = `${c.emoji} Let's Write!`;
+  document.getElementById("wSub").textContent = `ライティング ／ 目安 ${WMIN[lv]}分`;
+
+  // Pills
+  renderPills("wPills", lv, (x) => wSetLevel(x));
+
+  // Card
+  const card = document.getElementById("wCard");
+  card.style.boxShadow = `0 8px 40px ${c.color}22, 0 2px 12px rgba(0,0,0,0.06)`;
+  card.style.border = `2px solid ${c.color}33`;
+  document.getElementById("wBar").style.background = `linear-gradient(90deg, ${c.dark}, ${c.color})`;
+  document.getElementById("wTopicLabel").style.color = c.color;
+  document.getElementById("wTopicText").textContent = state.wTopic.topic;
+  document.getElementById("wMins").textContent = `⏱ 目安時間: ${WMIN[lv]}分`;
+
+  // Points
+  const pts = document.getElementById("wPoints");
+  pts.innerHTML = state.wTopic.points.map((p, i) =>
+    `<span style="${chipStyle(c, i)}">${p}</span>`
+  ).join("");
+
+  // Ring timer (conic-gradient)
+  document.getElementById("wRing").style.background =
+    `conic-gradient(${ringColor} ${pct * 360}deg, ${ringColor}20 0deg)`;
+  const timeEl = document.getElementById("wTimeText");
+  timeEl.textContent = formatTime(t);
+  timeEl.style.color = isDone ? "#fa5252" : "#222";
+  document.getElementById("wStatus").textContent = isDone ? "DONE! 🎉" : state.wRunning ? "running" : "ready";
+
+  // Buttons
+  const startBtn = document.getElementById("wStartBtn");
+  const pauseBtn = document.getElementById("wPauseBtn");
+  const resetBtn = document.getElementById("wResetBtn");
+
+  startBtn.classList.toggle("hidden", state.wRunning || isDone);
+  pauseBtn.classList.toggle("hidden", !state.wRunning);
+  resetBtn.classList.toggle("hidden", t === total || isDone);
+
+  startBtn.style.cssText = primaryBtnStyle(c.color, c.color + "cc", true);
+  startBtn.textContent = "▶ START";
+  pauseBtn.style.cssText = `background:#fff;color:${c.color};border:2px solid ${c.color};border-radius:100px;padding:11px 28px;font-size:15px;font-weight:800;`;
+  pauseBtn.textContent = "⏸ PAUSE";
+
+  // Next button
+  const nextBtn = document.getElementById("wNextBtn");
+  nextBtn.style.cssText = dashedBtnStyle(c);
+  nextBtn.textContent = "🎲 次のお題へ";
+
+  // Done
+  document.getElementById("wDone").classList.toggle("hidden", !isDone);
+}
+
+// ── SPEAKING RENDER ──────────────────────────────────────────────────
+function renderSpeaking() {
+  const lv = state.sLevel, c = LC[lv], data = SPEAKING[lv];
+  const targetMs = data.targetSec * 1000, el = state.sElapsed;
+  const pct = Math.min(1, el / targetMs);
+  const over = el >= targetMs && el > 0;
+  const swColor = over ? "#fa5252" : el >= targetMs * 0.75 ? "#ff922b" : c.color;
+
+  // Header
+  document.getElementById("sH1").style.backgroundImage = `linear-gradient(135deg, ${c.dark}, ${c.color})`;
+  document.getElementById("sH1").textContent = `${c.emoji} Let's Speak!`;
+  document.getElementById("sSub").textContent = `${data.format} ／ 目標 ${formatTarget(data.targetSec)}`;
+
+  // Pills
+  renderPills("sPills", lv, (x) => sSetLevel(x));
+
+  // Card
+  const card = document.getElementById("sCard");
+  card.style.boxShadow = `0 8px 40px ${c.color}18, 0 2px 10px rgba(0,0,0,0.05)`;
+  card.style.border = `1.5px solid ${c.color}28`;
+  document.getElementById("sBar").style.background = `linear-gradient(90deg, ${c.dark}, ${c.color})`;
+  document.getElementById("sQLabel").style.color = c.color;
+  document.getElementById("sQText").textContent = `"${state.sQ.q}"`;
+
+  const hints = document.getElementById("sHints");
+  hints.innerHTML = state.sQ.hints.map((h, i) =>
+    `<span style="${chipStyle(c, i)}">${h}</span>`
+  ).join("");
+
+  // Stopwatch
+  const bigEl = document.getElementById("sBig");
+  bigEl.textContent = formatSW(el);
+  bigEl.style.color = swColor;
+  bigEl.style.textShadow = state.sRunning ? `0 0 40px ${swColor}28` : "none";
+
+  const fill = document.getElementById("sBarFill");
+  fill.style.width = `${pct * 100}%`;
+  fill.style.background = over ? "#fa5252" : el >= targetMs * 0.75 ? "#ff922b" : `linear-gradient(90deg, ${c.dark}, ${c.color})`;
+
+  document.getElementById("sTarget").textContent = `目標 ${formatTarget(data.targetSec)}以内`;
+
+  // Buttons
+  const startBtn = document.getElementById("sStartBtn");
+  const stopBtn = document.getElementById("sStopBtn");
+  const resetBtn = document.getElementById("sResetBtn");
+
+  startBtn.classList.toggle("hidden", state.sRunning);
+  stopBtn.classList.toggle("hidden", !state.sRunning);
+  resetBtn.classList.toggle("hidden", el === 0);
+
+  startBtn.style.cssText = primaryBtnStyle(c.color, c.dark, false);
+  startBtn.textContent = "▶ スタート";
+
+  // Next / over
+  const nextBtn = document.getElementById("sNextBtn");
+  nextBtn.style.cssText = dashedBtnStyle(c);
+  nextBtn.textContent = "🎲 次の問題へ";
+
+  document.getElementById("sOver").classList.toggle("hidden", !over);
+}
+
+// ── PILLS ────────────────────────────────────────────────────────────
+function renderPills(containerId, activeLevel, onClick) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = LEVELS.map(lv => {
+    const c = LC[lv], active = lv === activeLevel;
+    const bg = active ? `linear-gradient(135deg, ${c.dark}, ${c.color})` : "#fff";
+    const color = active ? "#fff" : c.color;
+    const shadow = active ? `0 4px 14px ${c.color}44` : "none";
+    const scale = active ? "scale(1.08)" : "scale(1)";
+    return `<button onclick="(${onClick.toString()})('${lv}')"
+      style="background:${bg};color:${color};border:2px solid ${c.color};border-radius:100px;padding:7px 16px;font-size:14px;font-weight:800;transition:all 0.2s;box-shadow:${shadow};transform:${scale};"
+    >${c.emoji} ${lv}</button>`;
+  }).join("");
+}
+
+function renderAll() {
+  renderWriting();
+  renderSpeaking();
+}
+
+// ── WRITING ACTIONS ──────────────────────────────────────────────────
+function wSetLevel(lv) {
+  clearInterval(wTimer); wTimer = null;
+  state.wLevel = lv;
+  state.wTopic = pick(TOPICS[lv]);
+  state.wTimeLeft = WMIN[lv] * 60;
+  state.wRunning = false;
+  // Trigger card animation by re-cloning
+  animateCard("wCard", "popIn");
+  renderWriting();
+}
+
+function wStart() {
+  state.wRunning = true;
+  clearInterval(wTimer);
+  wTimer = setInterval(() => {
+    if (state.wTimeLeft <= 1) {
+      clearInterval(wTimer); wTimer = null;
+      state.wTimeLeft = 0;
+      state.wRunning = false;
+    } else {
+      state.wTimeLeft--;
+    }
+    renderWriting();
+  }, 1000);
+  renderWriting();
+}
+
+function wPause() {
+  clearInterval(wTimer); wTimer = null;
+  state.wRunning = false;
+  renderWriting();
+}
+
+function wReset() {
+  clearInterval(wTimer); wTimer = null;
+  state.wTimeLeft = WMIN[state.wLevel] * 60;
+  state.wRunning = false;
+  renderWriting();
+}
+
+function wNewTopic() {
+  clearInterval(wTimer); wTimer = null;
+  state.wTopic = pick(TOPICS[state.wLevel], state.wTopic.topic);
+  state.wTimeLeft = WMIN[state.wLevel] * 60;
+  state.wRunning = false;
+  animateCard("wCard", "popIn");
+  renderWriting();
+}
+
+// ── SPEAKING ACTIONS ─────────────────────────────────────────────────
+function sSetLevel(lv) {
+  clearInterval(sTimer); sTimer = null;
+  state.sLevel = lv;
+  state.sQ = pick(SPEAKING[lv].questions);
+  state.sRunning = false;
+  state.sElapsed = 0;
+  animateCard("sCard", "slideUp");
+  renderSpeaking();
+}
+
+function sStart() {
+  state.sRunning = true;
+  sBase = performance.now() - state.sElapsed;
+  clearInterval(sTimer);
+  sTimer = setInterval(() => {
+    state.sElapsed = performance.now() - sBase;
+    renderSpeaking();
+  }, 200);
+  renderSpeaking();
+}
+
+function sStop() {
+  clearInterval(sTimer); sTimer = null;
+  state.sRunning = false;
+  renderSpeaking();
+}
+
+function sReset() {
+  clearInterval(sTimer); sTimer = null;
+  state.sRunning = false;
+  state.sElapsed = 0;
+  renderSpeaking();
+}
+
+function sNewQ() {
+  clearInterval(sTimer); sTimer = null;
+  state.sQ = pick(SPEAKING[state.sLevel].questions, state.sQ.q);
+  state.sRunning = false;
+  state.sElapsed = 0;
+  animateCard("sCard", "slideUp");
+  renderSpeaking();
+}
+
+// ── ANIMATION HELPER ─────────────────────────────────────────────────
+function animateCard(id, anim) {
+  const el = document.getElementById(id);
+  el.style.animation = "none";
+  el.offsetHeight; // force reflow
+  el.style.animation = `${anim} 0.35s cubic-bezier(0.34,1.56,0.64,1)`;
+}
+
+// ── START ────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
