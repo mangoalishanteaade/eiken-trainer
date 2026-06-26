@@ -803,10 +803,6 @@ function updateS1PrepDisplay() {
   fill.style.background = col;
   disp.textContent = t;
   disp.style.color = col;
-  if (questionsDiv) {
-    questionsDiv.style.pointerEvents = t === 0 ? "auto" : "none";
-    questionsDiv.style.opacity = t === 0 ? "1" : "0.4";
-  }
   if (t === 0) {
     status.textContent = "選択してください";
     status.style.color = "#7950f2";
