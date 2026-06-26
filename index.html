@@ -83,10 +83,20 @@
 
     <!-- 1級: question selection + prep timer -->
     <div id="s1Choose" class="hidden" style="max-width:580px;width:100%;margin-bottom:20px;">
-      <div style="background:#fff;border-radius:22px;padding:22px 28px 18px;margin-bottom:14px;box-shadow:0 4px 24px rgba(0,0,0,0.06);border:1.5px solid #efefef;display:flex;flex-direction:column;align-items:center;gap:6px;">
-        <div style="font-size:11px;font-weight:800;letter-spacing:3px;color:#7950f2;text-transform:uppercase;">⏱ 準備時間</div>
-        <div id="s1PrepDisplay" style="font-size:56px;font-weight:900;font-variant-numeric:tabular-nums;color:#7950f2;line-height:1;">01:00</div>
-        <div id="s1PrepStatus" style="font-size:11px;color:#bbb;font-weight:700;letter-spacing:2px;text-transform:uppercase;">ready</div>
+      <!-- Ring prep timer -->
+      <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:20px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:3px;color:#7950f2;text-transform:uppercase;margin-bottom:12px;">⏱ 準備時間</div>
+        <div id="s1PrepRing" style="width:140px;height:140px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.6s linear;">
+          <div style="width:116px;height:116px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div id="s1PrepDisplay" style="font-size:44px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1;transition:color 0.3s;color:#7950f2;">60</div>
+            <div id="s1PrepStatus" style="font-size:10px;color:#bbb;font-weight:700;letter-spacing:2px;margin-top:4px;text-transform:uppercase;">ready</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px;">
+          <button id="s1StopBtn" onclick="s1PrepStop()" class="hidden" style="background:#fff;color:#7950f2;border:2px solid #7950f2;border-radius:100px;padding:9px 22px;font-size:13px;font-weight:800;">⏸ ストップ</button>
+          <button id="s1ResumeBtn" onclick="s1PrepResume()" class="hidden" style="background:linear-gradient(135deg,#4c2fa1,#7950f2);color:#fff;border:none;border-radius:100px;padding:9px 22px;font-size:13px;font-weight:800;box-shadow:0 4px 14px #7950f244;">▶ 再開</button>
+          <button id="s1ResetBtn" onclick="s1PrepReset()" class="hidden" style="background:#fff;color:#aaa;border:2px solid #e0e0e0;border-radius:100px;padding:9px 20px;font-size:13px;font-weight:700;">↺ リセット</button>
+        </div>
       </div>
       <div style="font-size:12px;font-weight:800;letter-spacing:2px;color:#bbb;text-transform:uppercase;text-align:center;margin-bottom:12px;">トピックを1つ選んでください</div>
       <div id="s1Questions" style="display:flex;flex-direction:column;gap:10px;"></div>
@@ -649,30 +659,25 @@ function renderSpeaking() {
   document.getElementById("sSwCard").classList.toggle("hidden", inSelectPhase);
 
   if (inSelectPhase) {
-    // Render 1級 selection UI
-    const prepLeft = state.s1PrepLeft;
-    const prepEl = document.getElementById("s1PrepDisplay");
-    prepEl.textContent = formatTime(prepLeft);
-    prepEl.style.color = prepLeft <= 10 ? "#fa5252" : "#7950f2";
-    document.getElementById("s1PrepStatus").textContent =
-      prepLeft === 0 ? "TIME UP" : state.s1PrepRunning ? "counting" : "ready";
-
+    // Render questions (only on initial render — timer updates via updateS1PrepDisplay)
     document.getElementById("s1Questions").innerHTML = state.s1Questions.map((q, idx) => `
       <button onclick="s1SelectQ(${idx})" style="
-        background:#fff;border:2px solid #7950f222;border-radius:16px;
-        padding:16px 20px;text-align:left;cursor:pointer;
+        background:#fff;border:1.5px solid #7950f222;border-radius:16px;
+        padding:16px 20px 16px 20px;text-align:left;cursor:pointer;
         font-family:inherit;font-size:clamp(14px,2.2vw,16px);font-weight:700;
         color:#222;line-height:1.6;transition:all 0.18s;
         box-shadow:0 2px 12px rgba(121,80,242,0.07);
-        animation:fadeIn 0.3s ease ${idx*0.06}s both;
+        position:relative;overflow:hidden;
       "
       onmouseover="this.style.background='#f3f0ff';this.style.borderColor='#7950f255';this.style.boxShadow='0 4px 20px rgba(121,80,242,0.15)'"
       onmouseout="this.style.background='#fff';this.style.borderColor='#7950f222';this.style.boxShadow='0 2px 12px rgba(121,80,242,0.07)'"
       >
-        <span style="font-size:11px;font-weight:800;letter-spacing:2px;color:#7950f2;text-transform:uppercase;display:block;margin-bottom:6px;">Topic ${idx+1}</span>
+        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#4c2fa1,#7950f2);border-radius:16px 16px 0 0;"></div>
+        <span style="font-size:11px;font-weight:800;letter-spacing:2px;color:#7950f2;text-transform:uppercase;display:block;margin-bottom:6px;margin-top:2px;">Topic ${idx+1}</span>
         ${q.q}
       </button>
     `).join("");
+    updateS1PrepDisplay();
   } else {
     // Regular question card + stopwatch
     const el = state.sElapsed;
@@ -780,8 +785,50 @@ function state1PrepStart() {
       clearInterval(s1PrepTimer); s1PrepTimer = null;
       state.s1PrepLeft = 0; state.s1PrepRunning = false;
     } else { state.s1PrepLeft--; }
-    renderSpeaking();
+    updateS1PrepDisplay(); // lightweight — no question re-render
   }, 1000);
+}
+function updateS1PrepDisplay() {
+  const t = state.s1PrepLeft;
+  const pct = t / 60;
+  const ring = document.getElementById("s1PrepRing");
+  const disp = document.getElementById("s1PrepDisplay");
+  const status = document.getElementById("s1PrepStatus");
+  const stopBtn = document.getElementById("s1StopBtn");
+  const resumeBtn = document.getElementById("s1ResumeBtn");
+  const resetBtn = document.getElementById("s1ResetBtn");
+  if (!ring) return;
+  const col = t <= 10 ? "#fa5252" : "#7950f2";
+  ring.style.background = `conic-gradient(${col} ${pct * 360}deg, ${col}18 0deg)`;
+  ring.style.border = `2px solid ${col}30`;
+  disp.textContent = t;
+  disp.style.color = col;
+  if (t === 0) {
+    status.textContent = "TIME UP";
+    stopBtn.classList.add("hidden"); resumeBtn.classList.add("hidden"); resetBtn.classList.remove("hidden");
+  } else if (state.s1PrepRunning) {
+    status.textContent = "残り";
+    stopBtn.classList.remove("hidden"); resumeBtn.classList.add("hidden"); resetBtn.classList.add("hidden");
+  } else {
+    status.textContent = "停止中";
+    stopBtn.classList.add("hidden"); resumeBtn.classList.remove("hidden"); resetBtn.classList.remove("hidden");
+  }
+}
+function s1PrepStop() {
+  clearInterval(s1PrepTimer); s1PrepTimer = null;
+  state.s1PrepRunning = false;
+  updateS1PrepDisplay();
+}
+function s1PrepResume() {
+  if (state.s1PrepLeft <= 0) return;
+  state1PrepStart();
+  updateS1PrepDisplay();
+}
+function s1PrepReset() {
+  clearInterval(s1PrepTimer); s1PrepTimer = null;
+  state.s1PrepLeft = 60;
+  state1PrepStart();
+  updateS1PrepDisplay();
 }
 function s1SelectQ(idx) {
   clearInterval(s1PrepTimer); s1PrepTimer = null;
