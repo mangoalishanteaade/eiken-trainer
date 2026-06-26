@@ -23,6 +23,7 @@
     @keyframes slideUp { from { opacity:0; transform:translateY(18px) scale(0.96) } to { opacity:1; transform:translateY(0) scale(1) } }
     @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.45 } }
     @keyframes bounce { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-6px) } }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
     button { font-family: 'Nunito', 'Hiragino Maru Gothic ProN', 'M PLUS Rounded 1c', sans-serif; cursor: pointer; }
     .section { width: 100%; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; }
     .hidden { display: none !important; }
@@ -32,7 +33,6 @@
 </head>
 <body>
 
-  <!-- Ambient blobs -->
   <div id="blob1" style="position:fixed;top:-100px;left:-100px;width:340px;height:340px;border-radius:50%;opacity:0.07;filter:blur(60px);pointer-events:none;transition:background 0.4s;background:#40c057;"></div>
   <div style="position:fixed;bottom:-90px;right:-90px;width:300px;height:300px;border-radius:50%;background:#228be6;opacity:0.06;filter:blur(50px);pointer-events:none;"></div>
 
@@ -49,11 +49,7 @@
       <h1 id="wH1" style="margin:0;font-size:clamp(28px,5.5vw,46px);font-weight:900;letter-spacing:-0.5px;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;transition:background 0.4s;"></h1>
       <div id="wSub" style="font-size:13px;color:#bbb;margin-top:5px;font-weight:700;"></div>
     </div>
-
-    <!-- Level pills 3x2 -->
     <div id="wPills" style="display:grid;grid-template-columns:repeat(3,auto);gap:8px;justify-content:center;margin-bottom:26px;"></div>
-
-    <!-- Topic card -->
     <div id="wCard" style="background:#fff;border-radius:24px;padding:30px 34px;max-width:580px;width:100%;margin-bottom:4px;position:relative;overflow:hidden;">
       <div id="wBar" style="position:absolute;top:0;left:0;right:0;height:5px;border-radius:24px 24px 0 0;"></div>
       <div id="wTopicLabel" style="font-size:11px;font-weight:800;letter-spacing:4px;text-transform:uppercase;margin-bottom:16px;">📝 Topic</div>
@@ -61,16 +57,12 @@
       <div id="wPoints" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
       <div id="wMins" style="margin-top:16px;font-size:12px;color:#bbb;font-weight:600;"></div>
     </div>
-
-    <!-- Ring timer -->
     <div id="wRing" style="width:140px;height:140px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:24px 0 4px;transition:background 0.6s linear;">
       <div style="width:116px;height:116px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">
         <div id="wTimeText" style="font-size:30px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:1px;line-height:1;color:#222;transition:color 0.3s;"></div>
         <div id="wStatus" style="font-size:10px;color:#bbb;font-weight:700;letter-spacing:2px;margin-top:4px;text-transform:uppercase;"></div>
       </div>
     </div>
-
-    <!-- Controls -->
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:22px 0 16px;">
       <button id="wStartBtn" onclick="wStart()" class="hidden"></button>
       <button id="wPauseBtn" onclick="wPause()" class="hidden"></button>
@@ -87,12 +79,21 @@
       <h1 id="sH1" style="margin:0;font-size:clamp(28px,5.5vw,46px);font-weight:900;letter-spacing:-0.5px;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;transition:background 0.4s;"></h1>
       <div id="sSub" style="font-size:13px;color:#bbb;margin-top:5px;font-weight:700;"></div>
     </div>
-
-    <!-- Level pills 3x2 -->
     <div id="sPills" style="display:grid;grid-template-columns:repeat(3,auto);gap:8px;justify-content:center;margin-bottom:26px;"></div>
 
-    <!-- Question card -->
-    <div id="sCard" style="background:#fff;border-radius:22px;padding:28px 32px 24px;max-width:580px;width:100%;margin-bottom:20px;position:relative;overflow:hidden;">
+    <!-- 1級: question selection + prep timer -->
+    <div id="s1Choose" class="hidden" style="max-width:580px;width:100%;margin-bottom:20px;">
+      <div style="background:#fff;border-radius:22px;padding:22px 28px 18px;margin-bottom:14px;box-shadow:0 4px 24px rgba(0,0,0,0.06);border:1.5px solid #efefef;display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:3px;color:#7950f2;text-transform:uppercase;">⏱ 準備時間</div>
+        <div id="s1PrepDisplay" style="font-size:56px;font-weight:900;font-variant-numeric:tabular-nums;color:#7950f2;line-height:1;">01:00</div>
+        <div id="s1PrepStatus" style="font-size:11px;color:#bbb;font-weight:700;letter-spacing:2px;text-transform:uppercase;">ready</div>
+      </div>
+      <div style="font-size:12px;font-weight:800;letter-spacing:2px;color:#bbb;text-transform:uppercase;text-align:center;margin-bottom:12px;">トピックを1つ選んでください</div>
+      <div id="s1Questions" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+
+    <!-- Regular question card (all levels except 1級 select phase) -->
+    <div id="sCard" class="hidden" style="background:#fff;border-radius:22px;padding:28px 32px 24px;max-width:580px;width:100%;margin-bottom:20px;position:relative;overflow:hidden;">
       <div id="sBar" style="position:absolute;top:0;left:0;right:0;height:5px;"></div>
       <div id="sQLabel" style="font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;">🎤 Question</div>
       <div id="sQText" style="font-size:clamp(17px,2.8vw,22px);line-height:1.8;color:#222;font-weight:700;margin-bottom:18px;"></div>
@@ -103,7 +104,7 @@
     </div>
 
     <!-- Stopwatch card -->
-    <div style="background:#fff;border-radius:22px;padding:28px 32px 26px;max-width:580px;width:100%;margin-bottom:20px;box-shadow:0 4px 24px rgba(0,0,0,0.06);border:1.5px solid #efefef;display:flex;flex-direction:column;align-items:center;gap:14px;">
+    <div id="sSwCard" class="hidden" style="background:#fff;border-radius:22px;padding:28px 32px 26px;max-width:580px;width:100%;margin-bottom:20px;box-shadow:0 4px 24px rgba(0,0,0,0.06);border:1.5px solid #efefef;display:flex;flex-direction:column;align-items:center;gap:14px;">
       <div id="sBig" style="font-size:clamp(56px,15vw,92px);font-weight:900;font-variant-numeric:tabular-nums;line-height:1;transition:color 0.25s;color:#40c057;">00</div>
       <div style="width:100%;max-width:280px;height:6px;background:#f0f0f0;border-radius:100px;overflow:hidden;">
         <div id="sBarFill" style="height:100%;width:0%;border-radius:100px;transition:width 0.2s linear,background 0.3s;background:#40c057;"></div>
@@ -143,6 +144,28 @@ const TOPICS = {
     { topic:"Do you like cooking?", points:["Taste","Family","Skill"] },
     { topic:"Which is better, a town with many shops or a quiet town?", points:["Convenience","Nature","Cost"] },
     { topic:"Do you want to study abroad someday?", points:["Language","Culture","Experience"] },
+    { topic:"Do you like animals? Do you want a pet?", points:["Care","Happiness","Responsibility"] },
+    { topic:"What kind of music do you like?", points:["Mood","Genre","Memory"] },
+    { topic:"Which do you prefer, Japanese food or Western food?", points:["Taste","Health","Cost"] },
+    { topic:"Do you think it is important to be kind to others?", points:["Friendship","Society","Happiness"] },
+    { topic:"Which do you enjoy more, weekdays or weekends?", points:["School","Freedom","Activities"] },
+    { topic:"Do you like going to school? Why?", points:["Learning","Friends","Future"] },
+    { topic:"Which do you prefer, living in a city or in the countryside?", points:["Nature","Convenience","Community"] },
+    { topic:"Do you think exercise is important for children?", points:["Health","Fun","Teamwork"] },
+    { topic:"Would you like to travel to another country?", points:["Culture","Language","Food"] },
+    { topic:"Do you like going to the library? Why?", points:["Books","Study","Quiet"] },
+    { topic:"Which do you prefer, shopping online or in stores?", points:["Convenience","Price","Experience"] },
+    { topic:"Do you think it is important to have good manners?", points:["Respect","Society","Trust"] },
+    { topic:"Do you enjoy watching TV? What programs do you like?", points:["Entertainment","Information","Time"] },
+    { topic:"Which is better, studying in a group or alone?", points:["Focus","Teamwork","Efficiency"] },
+    { topic:"Do you think children should help with housework?", points:["Responsibility","Family","Skills"] },
+    { topic:"Which do you prefer, having many friends or a few close friends?", points:["Trust","Fun","Support"] },
+    { topic:"Do you think it is important to save money?", points:["Future","Goals","Habits"] },
+    { topic:"Do you like traditional Japanese festivals?", points:["Culture","Family","Food"] },
+    { topic:"Which do you enjoy more, indoor or outdoor activities?", points:["Nature","Weather","Health"] },
+    { topic:"Do you think it is good to wake up early in the morning?", points:["Health","Study","Time"] },
+    { topic:"Which do you prefer, giving or receiving presents?", points:["Joy","Cost","Gratitude"] },
+    { topic:"Do you think it is important to be healthy?", points:["Diet","Exercise","Habits"] },
   ],
   "準2級": [
     { topic:"Do you think families should make time to play sports together?", points:["Health","Bonding","Time"] },
@@ -153,6 +176,28 @@ const TOPICS = {
     { topic:"Do you think people should use bicycles more often?", points:["Environment","Health","Safety"] },
     { topic:"Do you think students should join a club at school?", points:["Friends","Skills","Study time"] },
     { topic:"Do you think it is important to keep a daily diary?", points:["Memory","Writing","Habit"] },
+    { topic:"Do you think people should bring their own shopping bags?", points:["Environment","Convenience","Cost"] },
+    { topic:"Do you think it is better to buy things online than in stores?", points:["Convenience","Price","Experience"] },
+    { topic:"Do you think children should help with housework at home?", points:["Responsibility","Skills","Time"] },
+    { topic:"Do you think it is good for people to read the news every day?", points:["Information","Habit","Knowledge"] },
+    { topic:"Do you think people should exercise every day?", points:["Health","Time","Motivation"] },
+    { topic:"Do you think it is important for children to learn a musical instrument?", points:["Creativity","Concentration","Cost"] },
+    { topic:"Do you think watching too much TV is bad for children?", points:["Health","Study","Time"] },
+    { topic:"Do you think students should study more about the environment?", points:["Awareness","Future","Action"] },
+    { topic:"Do you think people should spend less time on social media?", points:["Health","Relationships","Time"] },
+    { topic:"Do you think it is important to learn about other countries' cultures?", points:["Understanding","Travel","Language"] },
+    { topic:"Do you think eating at home is better than eating at restaurants?", points:["Health","Cost","Family"] },
+    { topic:"Do you think it is important for teenagers to learn how to cook?", points:["Independence","Health","Skills"] },
+    { topic:"Do you think Japanese people should travel abroad more?", points:["Culture","Language","Cost"] },
+    { topic:"Do you think libraries are important for communities?", points:["Knowledge","Cost","Quiet"] },
+    { topic:"Do you think summer vacations should be longer for students?", points:["Rest","Study","Activities"] },
+    { topic:"Do you think people should volunteer in their local communities?", points:["Society","Skills","Time"] },
+    { topic:"Do you think it is good for students to use smartphones in class?", points:["Learning","Distraction","Rules"] },
+    { topic:"Do you think it is important to greet your neighbors?", points:["Community","Safety","Kindness"] },
+    { topic:"Do you think people should try to reduce the amount of garbage they make?", points:["Environment","Habits","Cost"] },
+    { topic:"Do you think pets are good for people's health?", points:["Happiness","Responsibility","Cost"] },
+    { topic:"Do you think it is better for students to walk or cycle to school?", points:["Health","Environment","Safety"] },
+    { topic:"Do you think shopping malls are good for local communities?", points:["Convenience","Local shops","Economy"] },
   ],
   "準2級+": [
     { topic:"Do you think it is better for students to study with friends than alone?", points:["Motivation","Focus","Teaching"] },
@@ -163,6 +208,28 @@ const TOPICS = {
     { topic:"Do you think schools should have more events like sports days?", points:["Teamwork","Memories","Preparation"] },
     { topic:"Do you think it is good for students to have a part-time job?", points:["Money","Experience","Study"] },
     { topic:"Do you think Japan should welcome more foreign tourists?", points:["Economy","Culture","Manners"] },
+    { topic:"Some people say that students should use tablets instead of textbooks. What do you think about that?", points:["Weight","Cost","Eyes"] },
+    { topic:"Do you think it is a good idea for cities to build more parks?", points:["Health","Environment","Cost"] },
+    { topic:"Some people say that online lessons are as good as classroom lessons. What do you think about that?", points:["Convenience","Focus","Interaction"] },
+    { topic:"Do you think people should try to reduce food waste?", points:["Environment","Cost","Habits"] },
+    { topic:"Some people say that school uniforms are good for students. What do you think about that?", points:["Equality","Freedom","Cost"] },
+    { topic:"Do you think more people will use electric bicycles in the future?", points:["Environment","Physical effort","Price"] },
+    { topic:"Some people say that libraries are still important today. What do you think about that?", points:["Study","Free access","Quiet"] },
+    { topic:"Do you think it is good for high school students to study abroad?", points:["Language","Culture","Cost"] },
+    { topic:"Some people say technology is changing education for the better. What do you think about that?", points:["Access","Engagement","Distraction"] },
+    { topic:"Do you think companies should allow more flexible working hours?", points:["Work-life balance","Productivity","Teamwork"] },
+    { topic:"Do you think it is important for students to learn about financial management?", points:["Independence","Future","Skills"] },
+    { topic:"Some people say social media has a positive effect on relationships. What do you think about that?", points:["Connection","Privacy","Comparison"] },
+    { topic:"Do you think cities should have more bicycle lanes?", points:["Safety","Environment","Cost"] },
+    { topic:"Some people say children spend too much time on smartphones. What do you think about that?", points:["Health","Learning","Social skills"] },
+    { topic:"Do you think young people today are less interested in traditional Japanese culture?", points:["Globalization","Media","Values"] },
+    { topic:"Do you think schools should teach cooking as a required subject?", points:["Health","Independence","Time"] },
+    { topic:"Some people say it is better to live in a city than in the countryside. What do you think about that?", points:["Convenience","Nature","Cost"] },
+    { topic:"Do you think more companies should adopt a four-day work week?", points:["Productivity","Rest","Economy"] },
+    { topic:"Some people say watching news on smartphones is as good as reading newspapers. What do you think about that?", points:["Speed","Accuracy","Habits"] },
+    { topic:"Do you think Japan should change its education system?", points:["Creativity","Pressure","Global skills"] },
+    { topic:"Do you think people today care enough about environmental issues?", points:["Awareness","Action","Media"] },
+    { topic:"Some people say it is better for children to grow up in a rural area. What do you think about that?", points:["Nature","Education","Community"] },
   ],
   "2級": [
     { topic:"Today, some companies use AI tools in their work. Do you think the number of such companies will increase in the future?", points:["Efficiency","Jobs","Cost"] },
@@ -175,6 +242,26 @@ const TOPICS = {
     { topic:"Do you think Japan should become a more paperless society?", points:["Environment","Convenience","Security"] },
     { topic:"Do you think schools should make more use of online education?", points:["Access","Cost","Motivation"] },
     { topic:"Do you think installing more solar panels is a good idea?", points:["Environment","Cost","Energy"] },
+    { topic:"Some people say that AI will take away many jobs. Do you agree with this idea?", points:["Automation","New jobs","Creativity"] },
+    { topic:"Do you think more people will work from home in the future?", points:["Productivity","Work-life balance","Isolation"] },
+    { topic:"Some people say that fast food is bad for society. Do you agree?", points:["Health","Convenience","Economy"] },
+    { topic:"Do you think Japan needs to accept more foreign workers?", points:["Labor shortage","Culture","Society"] },
+    { topic:"Do you think public transportation should be free for everyone?", points:["Environment","Cost","Traffic"] },
+    { topic:"Some people say that tourists are causing problems in Japanese cities. Do you agree?", points:["Economy","Culture","Manners"] },
+    { topic:"Do you think the government should invest more in renewable energy?", points:["Environment","Cost","Technology"] },
+    { topic:"Some people say that young people are losing interest in politics. Do you agree?", points:["Democracy","Education","Media"] },
+    { topic:"Do you think more women should work in leadership positions in Japan?", points:["Equality","Economy","Society"] },
+    { topic:"Do you think space exploration is worth the cost?", points:["Science","Cost","Survival"] },
+    { topic:"Some people say that Japan's population decline is a serious problem. Do you agree?", points:["Economy","Society","Policy"] },
+    { topic:"Do you think Japan should do more to help developing countries?", points:["Ethics","Economy","Diplomacy"] },
+    { topic:"Some people say that traditional values are becoming less important. Do you agree?", points:["Culture","Globalization","Identity"] },
+    { topic:"Do you think Japan's aging society will cause serious problems in the future?", points:["Healthcare","Economy","Labor"] },
+    { topic:"Some people say that children today have fewer chances to play outside. Do you agree?", points:["Health","Safety","Technology"] },
+    { topic:"Do you think the use of cashless payment should be promoted in Japan?", points:["Convenience","Security","Inclusion"] },
+    { topic:"Do you think universities in Japan need to change how they teach?", points:["Global skills","Research","Industry"] },
+    { topic:"Some people say that people rely too much on technology in their daily lives. Do you agree?", points:["Convenience","Dependency","Privacy"] },
+    { topic:"Do you think Japan should do more to protect its natural environment?", points:["Biodiversity","Economy","Tourism"] },
+    { topic:"Some people say that it is getting harder for young people to buy a home in Japan. Do you agree?", points:["Cost","Income","Policy"] },
   ],
   "準1級": [
     { topic:"Agree or disagree: Schools should pay teachers higher salaries.", points:["Education quality","Budget","Recruitment"] },
@@ -183,8 +270,30 @@ const TOPICS = {
     { topic:"Agree or disagree: More Japanese students should study overseas.", points:["Language","Cost","Global skills"] },
     { topic:"Agree or disagree: Public hospitals should receive more government funding.", points:["Healthcare","Taxes","Access"] },
     { topic:"Agree or disagree: Companies should keep telework rates high.", points:["Productivity","Work-life balance","Teamwork"] },
-    { topic:"Agree or disagree: Renewable energy can meet Japan's future needs.", points:["Sustainability","Cost","Reliability"] },
+    { topic:"Agree or disagree: Renewable energy can meet Japan's future energy needs.", points:["Sustainability","Cost","Reliability"] },
     { topic:"Agree or disagree: Tourism brings more benefits than problems to local communities.", points:["Economy","Culture","Environment"] },
+    { topic:"Agree or disagree: The government should invest more in public transportation.", points:["Environment","Accessibility","Cost"] },
+    { topic:"Agree or disagree: Social media companies should be regulated more strictly.", points:["Free speech","Privacy","Harmful content"] },
+    { topic:"Agree or disagree: Japan should accept more immigrants to address labor shortages.", points:["Economy","Integration","Society"] },
+    { topic:"Agree or disagree: Economic growth should be the top priority for governments.", points:["Inequality","Environment","Quality of life"] },
+    { topic:"Agree or disagree: Japan needs to reform its education system to compete globally.", points:["Creativity","Pressure","Standards"] },
+    { topic:"Agree or disagree: Income inequality has become a serious social problem in Japan.", points:["Poverty","Policy","Opportunity"] },
+    { topic:"Agree or disagree: Urban areas are receiving too much investment compared to rural areas.", points:["Regional balance","Services","Population"] },
+    { topic:"Agree or disagree: People should pay higher taxes to improve public services.", points:["Healthcare","Education","Infrastructure"] },
+    { topic:"Agree or disagree: Globalization has had a negative effect on local cultures.", points:["Identity","Trade","Diversity"] },
+    { topic:"Agree or disagree: Artificial intelligence will soon replace most professional jobs.", points:["Automation","New industries","Ethics"] },
+    { topic:"Agree or disagree: Japan's healthcare system needs significant reform.", points:["Cost","Aging","Access"] },
+    { topic:"Agree or disagree: Mental health should receive the same attention as physical health.", points:["Stigma","Policy","Productivity"] },
+    { topic:"Agree or disagree: The voting age in Japan should be lowered to 16.", points:["Responsibility","Policy","Education"] },
+    { topic:"Agree or disagree: Companies that damage the environment should face stricter penalties.", points:["Regulation","Business","Justice"] },
+    { topic:"Agree or disagree: English should be given more importance in Japan's education system.", points:["Global competition","Identity","Access"] },
+    { topic:"Agree or disagree: Developed countries have a responsibility to help developing nations.", points:["Ethics","Economics","Resources"] },
+    { topic:"Agree or disagree: Sports events like the Olympics cost too much to host.", points:["Economy","Legacy","Tourism"] },
+    { topic:"Agree or disagree: People in modern societies have become too dependent on technology.", points:["Convenience","Critical thinking","Privacy"] },
+    { topic:"Agree or disagree: Japan should do more to promote gender equality in the workplace.", points:["Economy","Culture","Policy"] },
+    { topic:"Agree or disagree: Nuclear power should remain part of Japan's energy policy.", points:["Safety","Cost","Climate"] },
+    { topic:"Agree or disagree: Remote work has changed Japanese work culture for the better.", points:["Productivity","Communication","Urban-rural balance"] },
+    { topic:"Agree or disagree: Japan should introduce a carbon tax to reduce emissions.", points:["Environment","Industry","Household cost"] },
   ],
   "1級": [
     { topic:"Agree or disagree: Economic growth should take priority over environmental protection.", points:["Sustainability","Development","Policy"] },
@@ -194,7 +303,29 @@ const TOPICS = {
     { topic:"Agree or disagree: Nuclear power is essential for a sustainable future.", points:["Energy","Safety","Climate"] },
     { topic:"Agree or disagree: Public funding for space exploration is justified.", points:["Science","Cost","Survival"] },
     { topic:"Agree or disagree: Democracy is the most effective form of government.", points:["Freedom","Efficiency","Stability"] },
-    { topic:"Agree or disagree: Capital punishment should be abolished.", points:["Human rights","Deterrence","Justice"] },
+    { topic:"Agree or disagree: Capital punishment should be abolished worldwide.", points:["Human rights","Deterrence","Justice"] },
+    { topic:"Agree or disagree: The nation-state is no longer a viable unit of political organization.", points:["Sovereignty","Globalization","Identity"] },
+    { topic:"Agree or disagree: Social media does more harm than good to society.", points:["Mental health","Information","Democracy"] },
+    { topic:"Agree or disagree: Developed nations have a moral obligation to accept refugees.", points:["Humanitarianism","Security","Integration"] },
+    { topic:"Agree or disagree: Genetic engineering for human enhancement should be permitted.", points:["Ethics","Science","Equality"] },
+    { topic:"Agree or disagree: Mass surveillance by governments is justified in the interest of security.", points:["Privacy","Safety","Power"] },
+    { topic:"Agree or disagree: Free trade benefits all countries equally.", points:["Developing nations","Inequality","Growth"] },
+    { topic:"Agree or disagree: The United Nations is effective in maintaining global peace.", points:["Sovereignty","Conflict","Reform"] },
+    { topic:"Agree or disagree: Corporate social responsibility should be legally mandated.", points:["Environment","Profit","Accountability"] },
+    { topic:"Agree or disagree: The benefits of globalization outweigh the drawbacks.", points:["Trade","Culture","Inequality"] },
+    { topic:"Agree or disagree: Technology is making humans less capable of critical thinking.", points:["Cognitive dependency","Information overload","Education"] },
+    { topic:"Agree or disagree: Animal testing for medical research should be banned.", points:["Ethics","Science","Alternatives"] },
+    { topic:"Agree or disagree: The media has too much influence over public opinion.", points:["Democracy","Bias","Responsibility"] },
+    { topic:"Agree or disagree: English dominance is threatening linguistic diversity.", points:["Culture","Global communication","Education"] },
+    { topic:"Agree or disagree: Overpopulation is the greatest environmental threat.", points:["Resources","Policy","Development"] },
+    { topic:"Agree or disagree: Human colonization of Mars is essential for our species' survival.", points:["Existential risk","Cost","Ethics"] },
+    { topic:"Agree or disagree: Nationalism is a growing threat to international cooperation.", points:["Identity","Trade","Security"] },
+    { topic:"Agree or disagree: The private sector is more efficient than the public sector.", points:["Competition","Accountability","Public good"] },
+    { topic:"Agree or disagree: Climate change poses a greater threat than terrorism.", points:["Timeline","Policy","Scale"] },
+    { topic:"Agree or disagree: Wealth inequality is the defining challenge of the 21st century.", points:["Social mobility","Policy","Automation"] },
+    { topic:"Agree or disagree: Autonomous weapons systems should be banned internationally.", points:["Ethics","Security","Accountability"] },
+    { topic:"Agree or disagree: Cultural relativism undermines the concept of universal human rights.", points:["Philosophy","Policy","Sovereignty"] },
+    { topic:"Agree or disagree: The internet has done more good than harm to society.", points:["Access","Misinformation","Privacy"] },
   ],
 };
 
@@ -208,6 +339,28 @@ const SPEAKING = {
     { q:"What is your favorite food?", hints:["食べ物","味","思い出"] },
     { q:"Where do you want to go on a trip?", hints:["場所","理由","やりたいこと"] },
     { q:"What time do you usually get up in the morning?", hints:["時間","理由","朝の習慣"] },
+    { q:"Do you like reading books?", hints:["好き嫌い","ジャンル","頻度"] },
+    { q:"What kind of music do you enjoy?", hints:["ジャンル","気分","誰と"] },
+    { q:"What do you want to be in the future?", hints:["職業","理由","夢"] },
+    { q:"Do you have any hobbies? What are they?", hints:["趣味","頻度","楽しさ"] },
+    { q:"What do you usually do after school?", hints:["習慣","場所","友達"] },
+    { q:"Do you like shopping? Where do you usually go?", hints:["好き嫌い","場所","何を買う"] },
+    { q:"What TV programs do you usually watch?", hints:["ジャンル","頻度","理由"] },
+    { q:"Do you enjoy cooking? What can you make?", hints:["好き嫌い","料理名","誰と"] },
+    { q:"What school event do you enjoy the most?", hints:["イベント名","理由","思い出"] },
+    { q:"Do you like Japanese festivals?", hints:["祭りの名前","食べ物","体験"] },
+    { q:"What kind of sport do you think is good for health?", hints:["スポーツ","効果","頻度"] },
+    { q:"What is your favorite way to spend a holiday?", hints:["活動","場所","誰と"] },
+    { q:"What subject are you good at?", hints:["教科","理由","楽しさ"] },
+    { q:"Do you prefer indoor or outdoor activities?", hints:["好み","理由","例"] },
+    { q:"What do you like to eat for breakfast?", hints:["食べ物","理由","頻度"] },
+    { q:"Who is your favorite person? Tell me about them.", hints:["誰","理由","思い出"] },
+    { q:"Do you like animals? Do you have any pets?", hints:["動物","理由","経験"] },
+    { q:"What do you think is important for good health?", hints:["食事","運動","睡眠"] },
+    { q:"What season do you like the best?", hints:["季節","理由","活動"] },
+    { q:"What do you think is fun about learning new things?", hints:["発見","達成感","役立つ"] },
+    { q:"Do you think it is important to be kind to others?", hints:["理由","例","感謝"] },
+    { q:"What do you want to learn more about?", hints:["興味","理由","方法"] },
   ]},
   "準2級": { format:"Q&A", targetSec:60, questions:[
     { q:"It is common for people to send messages online. Do you think sending messages is better than talking on the phone?", hints:["手軽さ","気持ち","誤解"] },
@@ -218,6 +371,28 @@ const SPEAKING = {
     { q:"Today, many free apps are available. Do you think these apps make our lives better?", hints:["便利さ","広告","依存"] },
     { q:"Nowadays, some restaurants stay open 24 hours. Do you think the number of such restaurants will increase?", hints:["需要","人手","コスト"] },
     { q:"These days, more people work from home. Do you think the number of such people will increase in the future?", hints:["効率","通勤","孤独"] },
+    { q:"Some people say that families should eat dinner together every day. Do you agree?", hints:["絆","忙しさ","コミュニケーション"] },
+    { q:"Recently, more children are learning to code. Do you think coding should be taught in all schools?", hints:["未来","論理的思考","費用"] },
+    { q:"These days, many young people enjoy watching videos online instead of TV. Do you think this trend will continue?", hints:["便利さ","選択肢","広告"] },
+    { q:"Some people say that students should have less homework. Do you agree?", hints:["自由時間","学習効果","ストレス"] },
+    { q:"Nowadays, many people use credit cards instead of cash. Do you think cash will disappear in the future?", hints:["利便性","安全性","高齢者"] },
+    { q:"Many schools now have tablets for students to use. Do you think this is a good idea?", hints:["学習","費用","目への影響"] },
+    { q:"Some people say that children should spend more time playing outside. Do you agree?", hints:["健康","安全","デジタル機器"] },
+    { q:"Recently, many companies have started using robots. Do you think robots will replace more workers in the future?", hints:["効率","雇用","コスト"] },
+    { q:"Nowadays, some supermarkets have self-checkout machines. Do you think the number of these machines will increase?", hints:["便利さ","雇用","エラー"] },
+    { q:"These days, many people are interested in eco-friendly products. Do you think more people will buy such products in the future?", hints:["環境","価格","習慣"] },
+    { q:"Some people say that young people do not read newspapers. Do you think this is a problem?", hints:["情報","習慣","デジタル"] },
+    { q:"Nowadays, many cities have bike-sharing programs. Do you think these programs are useful?", hints:["健康","環境","費用"] },
+    { q:"Some people say that children should limit their use of social media. Do you agree?", hints:["健康","勉強","つながり"] },
+    { q:"These days, it is common for people to order food online. Do you think this trend will continue?", hints:["便利さ","地元経済","健康"] },
+    { q:"Many people now exercise at home using videos. Do you think this is better than going to a gym?", hints:["費用","便利さ","モチベーション"] },
+    { q:"Some people say that students should wear uniforms at school. Do you agree?", hints:["平等","自由","費用"] },
+    { q:"These days, more people are becoming vegetarian. Do you think this trend will continue in Japan?", hints:["健康","環境","文化"] },
+    { q:"Nowadays, many people enjoy online shopping. Do you think this has a negative effect on local shops?", hints:["利便性","地元経済","体験"] },
+    { q:"Some people say that children today are less active than in the past. Do you agree?", hints:["スマホ","安全","運動"] },
+    { q:"Recently, more people are adopting pets. Do you think having a pet is good for people's health?", hints:["幸福感","責任","費用"] },
+    { q:"Some people say that everyone should learn to swim. Do you agree?", hints:["安全","健康","機会"] },
+    { q:"Nowadays, some high schools teach students about finance. Do you think this is a good idea?", hints:["将来","スキル","独立"] },
   ]},
   "準2級+": { format:"Q&A", targetSec:60, questions:[
     { q:"Some people say that students should use tablets instead of textbooks. What do you think about that?", hints:["重さ","費用","目"] },
@@ -228,6 +403,28 @@ const SPEAKING = {
     { q:"Do you think more people will use electric bicycles in the future?", hints:["環境","体力","価格"] },
     { q:"Some people say that libraries are still important today. What do you think about that?", hints:["学習","無料","静か"] },
     { q:"Do you think it is good for high school students to study abroad?", hints:["語学","文化","費用"] },
+    { q:"Some people say technology is changing education for the better. What do you think about that?", hints:["アクセス","集中","多様性"] },
+    { q:"Do you think it is important for students to learn about financial management?", hints:["独立","将来","スキル"] },
+    { q:"Some people say social media has a positive effect on relationships. What do you think about that?", hints:["つながり","プライバシー","比較"] },
+    { q:"Do you think cities should have more bicycle lanes?", hints:["安全","環境","費用"] },
+    { q:"Some people say children spend too much time on smartphones. What do you think about that?", hints:["健康","学習","社交スキル"] },
+    { q:"Do you think schools should teach cooking as a required subject?", hints:["健康","自立","時間"] },
+    { q:"Some people say it is better to live in a city than in the countryside. What do you think about that?", hints:["利便性","自然","費用"] },
+    { q:"Do you think more companies should adopt a four-day work week?", hints:["生産性","休養","経済"] },
+    { q:"Some people say watching news on smartphones is as good as reading newspapers. What do you think about that?", hints:["速報","正確性","習慣"] },
+    { q:"Do you think Japan should change its education system?", hints:["創造性","プレッシャー","グローバルスキル"] },
+    { q:"Some people say it is better for children to grow up in a rural area. What do you think about that?", hints:["自然","教育","コミュニティ"] },
+    { q:"Do you think companies should be required to hire more part-time workers as full-time employees?", hints:["安定","コスト","生産性"] },
+    { q:"Some people say that public transportation should be free for students. What do you think about that?", hints:["費用","環境","財政"] },
+    { q:"Do you think it is important for young people to join volunteer activities?", hints:["スキル","社会","時間"] },
+    { q:"Some people say that Japanese companies should allow employees to work more flexible hours. What do you think?", hints:["生産性","育児","チームワーク"] },
+    { q:"Do you think people should spend less time on social media?", hints:["メンタルヘルス","時間","つながり"] },
+    { q:"Some people say that all high school students should learn a programming language. What do you think?", hints:["将来","論理的思考","費用"] },
+    { q:"Do you think Japan needs more convenience stores in rural areas?", hints:["利便性","地元経済","環境"] },
+    { q:"Some people say that young people should travel more before starting their careers. What do you think?", hints:["視野","費用","時間"] },
+    { q:"Do you think it is important for schools to teach students about mental health?", hints:["意識","スティグマ","予防"] },
+    { q:"Some people say that Japan should introduce more English-language programs at universities. What do you think?", hints:["グローバル化","アイデンティティ","アクセス"] },
+    { q:"Do you think supermarkets should stop using plastic packaging?", hints:["環境","費用","利便性"] },
   ]},
   "2級": { format:"スピーチ", targetSec:60, questions:[
     { q:"Some people say that AI will take over our jobs. What do you think about that?", hints:["automation","new jobs","creativity"] },
@@ -239,7 +436,27 @@ const SPEAKING = {
     { q:"Some people say that social media is harmful to mental health. What do you think about that?", hints:["comparison","connection","information"] },
     { q:"Some people say that we need to be better prepared for natural disasters. What do you think about that?", hints:["safety","cost","awareness"] },
     { q:"Some people say that schools give too much homework to students. What do you think about that?", hints:["learning","free time","stress"] },
-    { q:"Some people say that coffee shops should not use disposable plastic straws. What do you think about that?", hints:["environment","convenience","cost"] },
+    { q:"Some people say that coffee shops should not use disposable plastic cups. What do you think about that?", hints:["environment","convenience","cost"] },
+    { q:"Some people say that more people should consider a career in agriculture. What do you think about that?", hints:["food security","lifestyle","income"] },
+    { q:"Some people say that tourists are causing problems for Japanese cities. What do you think about that?", hints:["economy","manners","culture"] },
+    { q:"Some people say that working from home is better for employees. What do you think about that?", hints:["productivity","isolation","work-life balance"] },
+    { q:"Some people say that electric cars will replace gasoline-powered cars. What do you think about that?", hints:["environment","cost","infrastructure"] },
+    { q:"Some people say that Japan needs to accept more immigrants. What do you think about that?", hints:["labor","integration","culture"] },
+    { q:"Some people say that companies should hire more women in leadership positions. What do you think about that?", hints:["equality","diversity","talent"] },
+    { q:"Some people say that space exploration is a waste of money. What do you think about that?", hints:["science","cost","survival"] },
+    { q:"Some people say that Japan's population decline is a serious problem. What do you think about that?", hints:["economy","society","policy"] },
+    { q:"Some people say that Japan's aging society will cause serious economic problems. What do you think about that?", hints:["healthcare","labor","pensions"] },
+    { q:"Some people say that cashless payment systems will completely replace cash. What do you think about that?", hints:["convenience","security","elderly"] },
+    { q:"Some people say that universities in Japan need to change how they teach. What do you think about that?", hints:["global skills","research","industry"] },
+    { q:"Some people say that traditional Japanese festivals are becoming less popular. What do you think about that?", hints:["culture","youth","globalization"] },
+    { q:"Some people say that young people in Japan are less motivated to work hard than in the past. What do you think about that?", hints:["values","lifestyle","economy"] },
+    { q:"Some people say that Japan should do more to protect its natural environment. What do you think about that?", hints:["biodiversity","development","tourism"] },
+    { q:"Some people say that children today have fewer opportunities to play outside. What do you think about that?", hints:["health","safety","technology"] },
+    { q:"Some people say that Japanese companies should focus more on employee well-being. What do you think about that?", hints:["productivity","health","culture"] },
+    { q:"Some people say that watching too much news can be bad for mental health. What do you think about that?", hints:["anxiety","awareness","balance"] },
+    { q:"Some people say that public transportation in Japan is too expensive. What do you think about that?", hints:["accessibility","environment","government"] },
+    { q:"Some people say that it is getting harder for young people to buy a home in Japan. What do you think about that?", hints:["cost","income","policy"] },
+    { q:"Some people say that Japan should do more to help developing countries. What do you think about that?", hints:["ethics","economy","diplomacy"] },
   ]},
   "準1級": { format:"スピーチ", targetSec:90, questions:[
     { q:"Some people say that nuclear power should be phased out in Japan. What do you think about that?", hints:["safety","energy needs","climate"] },
@@ -250,16 +467,60 @@ const SPEAKING = {
     { q:"Some people say that companies should focus more on protecting the environment. What do you think about that?", hints:["sustainability","cost","image"] },
     { q:"Some people say that university education should be free. What do you think about that?", hints:["access","taxes","value"] },
     { q:"Some people say that remote work will become standard in the future. What do you think about that?", hints:["productivity","balance","teamwork"] },
+    { q:"Some people say that the government should invest more in renewable energy. What do you think about that?", hints:["environment","cost","technology"] },
+    { q:"Some people say that social media companies should be regulated more strictly. What do you think about that?", hints:["free speech","privacy","harmful content"] },
+    { q:"Some people say that Japan needs to reform its education system to compete globally. What do you think about that?", hints:["creativity","pressure","standards"] },
+    { q:"Some people say that income inequality has become a serious social problem in Japan. What do you think about that?", hints:["poverty","policy","opportunity"] },
+    { q:"Some people say that artificial intelligence will soon replace most professional jobs. What do you think about that?", hints:["automation","new industries","ethics"] },
+    { q:"Some people say that Japan should do more to promote gender equality in the workplace. What do you think about that?", hints:["economy","culture","policy"] },
+    { q:"Some people say that mental health should receive the same attention as physical health. What do you think about that?", hints:["stigma","policy","productivity"] },
+    { q:"Some people say that developed countries have a responsibility to help developing nations. What do you think about that?", hints:["ethics","economics","resources"] },
+    { q:"Some people say that sports events like the Olympics cost too much to host. What do you think about that?", hints:["economy","legacy","tourism"] },
+    { q:"Some people say that people in modern societies have become too dependent on technology. What do you think about that?", hints:["convenience","critical thinking","privacy"] },
+    { q:"Some people say that globalization has had a negative effect on local cultures. What do you think about that?", hints:["identity","trade","diversity"] },
+    { q:"Some people say that higher taxes are necessary to improve public services. What do you think about that?", hints:["healthcare","education","burden"] },
+    { q:"Some people say that Japan's rural areas are being left behind economically. What do you think about that?", hints:["regional balance","services","population"] },
+    { q:"Some people say that the voting age in Japan should be lowered to 16. What do you think about that?", hints:["responsibility","policy","education"] },
+    { q:"Some people say that English should be given more importance in Japan's education system. What do you think about that?", hints:["global competition","identity","access"] },
+    { q:"Some people say that Japan should introduce a carbon tax to reduce emissions. What do you think about that?", hints:["environment","industry","household cost"] },
+    { q:"Some people say that the government should place limits on working hours. What do you think about that?", hints:["health","productivity","business"] },
+    { q:"Some people say that tourism has become too disruptive for local communities in Japan. What do you think about that?", hints:["economy","culture","environment"] },
+    { q:"Some people say that AI-generated content is a threat to human creativity. What do you think about that?", hints:["art","copyright","innovation"] },
+    { q:"Some people say that companies should be required to publish their environmental impact data. What do you think about that?", hints:["transparency","cost","accountability"] },
+    { q:"Some people say that Japan needs to do more to address its low birthrate. What do you think about that?", hints:["policy","lifestyle","economy"] },
+    { q:"Some people say that online privacy is no longer possible in the modern world. What do you think about that?", hints:["data","security","convenience"] },
   ]},
   "1級": { format:"ディベート", targetSec:120, questions:[
-    { q:"Should economic growth take priority over environmental protection?", hints:["sustainability","development","policy"] },
-    { q:"Is artificial intelligence a greater opportunity than a threat to society?", hints:["innovation","employment","control"] },
-    { q:"Should developed nations do more to reduce global inequality?", hints:["ethics","resources","politics"] },
-    { q:"Is globalization beneficial for the modern world?", hints:["trade","culture","inequality"] },
-    { q:"Should governments invest more heavily in space exploration?", hints:["science","cost","survival"] },
-    { q:"Can democracy survive the challenges of the digital age?", hints:["misinformation","participation","regulation"] },
-    { q:"Should nuclear weapons be completely abolished?", hints:["security","deterrence","trust"] },
-    { q:"Is capitalism compatible with environmental sustainability?", hints:["growth","regulation","innovation"] },
+    { q:"Agree or disagree: Economic growth should take priority over environmental protection.", hints:["sustainability","development","policy"] },
+    { q:"Agree or disagree: Artificial intelligence will benefit humanity more than it harms it.", hints:["labor","ethics","innovation"] },
+    { q:"Agree or disagree: Globalization undermines national cultures.", hints:["identity","trade","diversity"] },
+    { q:"Agree or disagree: A universal basic income should be introduced in developed nations.", hints:["poverty","automation","incentives"] },
+    { q:"Agree or disagree: Nuclear power is essential for a sustainable future.", hints:["energy","safety","climate"] },
+    { q:"Agree or disagree: Public funding for space exploration is justified.", hints:["science","cost","survival"] },
+    { q:"Agree or disagree: Democracy is the most effective form of government.", hints:["freedom","efficiency","stability"] },
+    { q:"Agree or disagree: Capital punishment should be abolished worldwide.", hints:["human rights","deterrence","justice"] },
+    { q:"Agree or disagree: The nation-state is no longer a viable unit of political organization.", hints:["sovereignty","globalization","identity"] },
+    { q:"Agree or disagree: Social media does more harm than good to society.", hints:["mental health","information","democracy"] },
+    { q:"Agree or disagree: Developed nations have a moral obligation to accept refugees.", hints:["humanitarianism","security","integration"] },
+    { q:"Agree or disagree: Genetic engineering for human enhancement should be permitted.", hints:["ethics","science","equality"] },
+    { q:"Agree or disagree: Mass surveillance by governments is justified in the interest of security.", hints:["privacy","safety","power"] },
+    { q:"Agree or disagree: Free trade benefits all countries equally.", hints:["developing nations","inequality","growth"] },
+    { q:"Agree or disagree: The United Nations is effective in maintaining global peace.", hints:["sovereignty","conflict","reform"] },
+    { q:"Agree or disagree: Corporate social responsibility should be legally mandated.", hints:["environment","profit","accountability"] },
+    { q:"Agree or disagree: Technology is making humans less capable of critical thinking.", hints:["cognitive dependency","information overload","education"] },
+    { q:"Agree or disagree: Animal testing for medical research should be banned.", hints:["ethics","science","alternatives"] },
+    { q:"Agree or disagree: The media has too much influence over public opinion.", hints:["democracy","bias","responsibility"] },
+    { q:"Agree or disagree: English dominance is threatening linguistic diversity.", hints:["culture","global communication","education"] },
+    { q:"Agree or disagree: Overpopulation is the greatest environmental threat.", hints:["resources","policy","development"] },
+    { q:"Agree or disagree: Human colonization of Mars is essential for our species' survival.", hints:["existential risk","cost","ethics"] },
+    { q:"Agree or disagree: Nationalism is a growing threat to international cooperation.", hints:["identity","trade","security"] },
+    { q:"Agree or disagree: The private sector is more efficient than the public sector.", hints:["competition","accountability","public good"] },
+    { q:"Agree or disagree: Climate change poses a greater threat than terrorism.", hints:["timeline","policy","scale"] },
+    { q:"Agree or disagree: Wealth inequality is the defining challenge of the 21st century.", hints:["social mobility","policy","automation"] },
+    { q:"Agree or disagree: Autonomous weapons systems should be banned internationally.", hints:["ethics","security","accountability"] },
+    { q:"Agree or disagree: Cultural relativism undermines the concept of universal human rights.", hints:["philosophy","policy","sovereignty"] },
+    { q:"Agree or disagree: The internet has done more good than harm to society.", hints:["access","misinformation","privacy"] },
+    { q:"Agree or disagree: Economic interdependence prevents military conflict between nations.", hints:["trade","history","geopolitics"] },
   ]},
 };
 
@@ -271,6 +532,9 @@ function formatTarget(sec) { if(sec<60) return sec+"秒"; const m=Math.floor(sec
 function pick(arr, excludeVal) {
   const pool = excludeVal != null ? arr.filter(x => (x.topic||x.q) !== excludeVal) : arr;
   return pool[Math.floor(Math.random() * pool.length)];
+}
+function pick5(arr) {
+  return [...arr].sort(() => Math.random() - 0.5).slice(0, 5);
 }
 function chipStyle(c, i) {
   const alphas = ["18","28","38"];
@@ -288,8 +552,13 @@ const state = {
   mode: "writing",
   wLevel: "2級", wTopic: null, wTimeLeft: 0, wRunning: false,
   sLevel: "2級", sQ: null, sRunning: false, sElapsed: 0,
+  // 1級 special
+  s1Questions: [],
+  s1Selected: null,
+  s1PrepLeft: 60,
+  s1PrepRunning: false,
 };
-let wTimer = null, sTimer = null, sBase = 0;
+let wTimer = null, sTimer = null, s1PrepTimer = null, sBase = 0;
 
 // ── INIT ─────────────────────────────────────────────────────────────
 function init() {
@@ -319,18 +588,13 @@ function renderWriting() {
   const isLow = t < 60, isMid = t < 180 && t >= 60, isDone = t === 0;
   const ringColor = (isDone || isLow) ? "#fa5252" : isMid ? "#ff922b" : c.color;
 
-  // Blob
   document.getElementById("blob1").style.background = c.color;
-
-  // Header
   document.getElementById("wH1").style.backgroundImage = `linear-gradient(135deg, ${c.dark}, ${c.color})`;
   document.getElementById("wH1").textContent = `${c.emoji} Let's Write!`;
   document.getElementById("wSub").textContent = `ライティング ／ 目安 ${WMIN[lv]}分`;
 
-  // Pills
   renderPills("wPills", lv, (x) => wSetLevel(x));
 
-  // Card
   const card = document.getElementById("wCard");
   card.style.boxShadow = `0 8px 40px ${c.color}22, 0 2px 12px rgba(0,0,0,0.06)`;
   card.style.border = `2px solid ${c.color}33`;
@@ -339,13 +603,9 @@ function renderWriting() {
   document.getElementById("wTopicText").textContent = state.wTopic.topic;
   document.getElementById("wMins").textContent = `⏱ 目安時間: ${WMIN[lv]}分`;
 
-  // Points
-  const pts = document.getElementById("wPoints");
-  pts.innerHTML = state.wTopic.points.map((p, i) =>
-    `<span style="${chipStyle(c, i)}">${p}</span>`
-  ).join("");
+  document.getElementById("wPoints").innerHTML = state.wTopic.points.map((p, i) =>
+    `<span style="${chipStyle(c, i)}">${p}</span>`).join("");
 
-  // Ring timer (conic-gradient)
   document.getElementById("wRing").style.background =
     `conic-gradient(${ringColor} ${pct * 360}deg, ${ringColor}20 0deg)`;
   const timeEl = document.getElementById("wTimeText");
@@ -353,11 +613,9 @@ function renderWriting() {
   timeEl.style.color = isDone ? "#fa5252" : "#222";
   document.getElementById("wStatus").textContent = isDone ? "DONE! 🎉" : state.wRunning ? "running" : "ready";
 
-  // Buttons
   const startBtn = document.getElementById("wStartBtn");
   const pauseBtn = document.getElementById("wPauseBtn");
   const resetBtn = document.getElementById("wResetBtn");
-
   startBtn.classList.toggle("hidden", state.wRunning || isDone);
   pauseBtn.classList.toggle("hidden", !state.wRunning);
   resetBtn.classList.toggle("hidden", t === total || isDone);
@@ -367,74 +625,94 @@ function renderWriting() {
   pauseBtn.style.cssText = `background:#fff;color:${c.color};border:2px solid ${c.color};border-radius:100px;padding:11px 28px;font-size:15px;font-weight:800;`;
   pauseBtn.textContent = "⏸ PAUSE";
 
-  // Next button
-  const nextBtn = document.getElementById("wNextBtn");
-  nextBtn.style.cssText = dashedBtnStyle(c);
-  nextBtn.textContent = "🎲 次のお題へ";
-
-  // Done
+  document.getElementById("wNextBtn").style.cssText = dashedBtnStyle(c);
   document.getElementById("wDone").classList.toggle("hidden", !isDone);
 }
 
 // ── SPEAKING RENDER ──────────────────────────────────────────────────
 function renderSpeaking() {
   const lv = state.sLevel, c = LC[lv], data = SPEAKING[lv];
-  const targetMs = data.targetSec * 1000, el = state.sElapsed;
-  const pct = Math.min(1, el / targetMs);
-  const over = el >= targetMs && el > 0;
-  const swColor = over ? "#fa5252" : el >= targetMs * 0.75 ? "#ff922b" : c.color;
+  const is1kyu = lv === "1級";
+  const inSelectPhase = is1kyu && state.s1Selected === null;
 
-  // Header
   document.getElementById("sH1").style.backgroundImage = `linear-gradient(135deg, ${c.dark}, ${c.color})`;
   document.getElementById("sH1").textContent = `${c.emoji} Let's Speak!`;
-  document.getElementById("sSub").textContent = `${data.format} ／ 目標 ${formatTarget(data.targetSec)}`;
+  document.getElementById("sSub").textContent = is1kyu
+    ? `${data.format} ／ 準備1分 → スピーチ2分`
+    : `${data.format} ／ 目標 ${formatTarget(data.targetSec)}`;
 
-  // Pills
   renderPills("sPills", lv, (x) => sSetLevel(x));
 
-  // Card
-  const card = document.getElementById("sCard");
-  card.style.boxShadow = `0 8px 40px ${c.color}18, 0 2px 10px rgba(0,0,0,0.05)`;
-  card.style.border = `1.5px solid ${c.color}28`;
-  document.getElementById("sBar").style.background = `linear-gradient(90deg, ${c.dark}, ${c.color})`;
-  document.getElementById("sQLabel").style.color = c.color;
-  document.getElementById("sQText").textContent = `"${state.sQ.q}"`;
+  // Show/hide panels
+  document.getElementById("s1Choose").classList.toggle("hidden", !inSelectPhase);
+  document.getElementById("sCard").classList.toggle("hidden", inSelectPhase);
+  document.getElementById("sSwCard").classList.toggle("hidden", inSelectPhase);
 
-  const hints = document.getElementById("sHints");
-  hints.innerHTML = state.sQ.hints.map((h, i) =>
-    `<span style="${chipStyle(c, i)}">${h}</span>`
-  ).join("");
+  if (inSelectPhase) {
+    // Render 1級 selection UI
+    const prepLeft = state.s1PrepLeft;
+    const prepEl = document.getElementById("s1PrepDisplay");
+    prepEl.textContent = formatTime(prepLeft);
+    prepEl.style.color = prepLeft <= 10 ? "#fa5252" : "#7950f2";
+    document.getElementById("s1PrepStatus").textContent =
+      prepLeft === 0 ? "TIME UP" : state.s1PrepRunning ? "counting" : "ready";
 
-  // Stopwatch
-  const bigEl = document.getElementById("sBig");
-  bigEl.textContent = formatSW(el);
-  bigEl.style.color = swColor;
-  bigEl.style.textShadow = state.sRunning ? `0 0 40px ${swColor}28` : "none";
+    document.getElementById("s1Questions").innerHTML = state.s1Questions.map((q, idx) => `
+      <button onclick="s1SelectQ(${idx})" style="
+        background:#fff;border:2px solid #7950f222;border-radius:16px;
+        padding:16px 20px;text-align:left;cursor:pointer;
+        font-family:inherit;font-size:clamp(14px,2.2vw,16px);font-weight:700;
+        color:#222;line-height:1.6;transition:all 0.18s;
+        box-shadow:0 2px 12px rgba(121,80,242,0.07);
+        animation:fadeIn 0.3s ease ${idx*0.06}s both;
+      "
+      onmouseover="this.style.background='#f3f0ff';this.style.borderColor='#7950f255';this.style.boxShadow='0 4px 20px rgba(121,80,242,0.15)'"
+      onmouseout="this.style.background='#fff';this.style.borderColor='#7950f222';this.style.boxShadow='0 2px 12px rgba(121,80,242,0.07)'"
+      >
+        <span style="font-size:11px;font-weight:800;letter-spacing:2px;color:#7950f2;text-transform:uppercase;display:block;margin-bottom:6px;">Topic ${idx+1}</span>
+        ${q.q}
+      </button>
+    `).join("");
+  } else {
+    // Regular question card + stopwatch
+    const el = state.sElapsed;
+    const targetMs = data.targetSec * 1000;
+    const pct = Math.min(1, el / targetMs);
+    const over = el >= targetMs && el > 0;
+    const swColor = over ? "#fa5252" : el >= targetMs * 0.75 ? "#ff922b" : c.color;
 
-  const fill = document.getElementById("sBarFill");
-  fill.style.width = `${pct * 100}%`;
-  fill.style.background = over ? "#fa5252" : el >= targetMs * 0.75 ? "#ff922b" : `linear-gradient(90deg, ${c.dark}, ${c.color})`;
+    document.getElementById("sCard").style.boxShadow = `0 8px 40px ${c.color}18, 0 2px 10px rgba(0,0,0,0.05)`;
+    document.getElementById("sCard").style.border = `1.5px solid ${c.color}28`;
+    document.getElementById("sBar").style.background = `linear-gradient(90deg, ${c.dark}, ${c.color})`;
+    document.getElementById("sQLabel").style.color = c.color;
+    document.getElementById("sQText").textContent = `"${state.sQ.q}"`;
+    document.getElementById("sHints").innerHTML = state.sQ.hints.map((h, i) =>
+      `<span style="${chipStyle(c, i)}">${h}</span>`).join("");
 
-  document.getElementById("sTarget").textContent = `目標 ${formatTarget(data.targetSec)}以内`;
+    const bigEl = document.getElementById("sBig");
+    bigEl.textContent = formatSW(el);
+    bigEl.style.color = swColor;
+    bigEl.style.textShadow = state.sRunning ? `0 0 40px ${swColor}28` : "none";
 
-  // Buttons
-  const startBtn = document.getElementById("sStartBtn");
-  const stopBtn = document.getElementById("sStopBtn");
-  const resetBtn = document.getElementById("sResetBtn");
+    const fill = document.getElementById("sBarFill");
+    fill.style.width = `${pct * 100}%`;
+    fill.style.background = over ? "#fa5252" : el >= targetMs * 0.75 ? "#ff922b" : `linear-gradient(90deg, ${c.dark}, ${c.color})`;
 
-  startBtn.classList.toggle("hidden", state.sRunning);
-  stopBtn.classList.toggle("hidden", !state.sRunning);
-  resetBtn.classList.toggle("hidden", el === 0);
+    document.getElementById("sTarget").textContent = `目標 ${formatTarget(data.targetSec)}以内`;
 
-  startBtn.style.cssText = primaryBtnStyle(c.color, c.dark, false);
-  startBtn.textContent = "▶ スタート";
+    const startBtn = document.getElementById("sStartBtn");
+    const stopBtn = document.getElementById("sStopBtn");
+    const resetBtn = document.getElementById("sResetBtn");
+    startBtn.classList.toggle("hidden", state.sRunning);
+    stopBtn.classList.toggle("hidden", !state.sRunning);
+    resetBtn.classList.toggle("hidden", el === 0);
+    startBtn.style.cssText = primaryBtnStyle(c.color, c.dark, false);
+    startBtn.textContent = "▶ スタート";
 
-  // Next / over
-  const nextBtn = document.getElementById("sNextBtn");
-  nextBtn.style.cssText = dashedBtnStyle(c);
-  nextBtn.textContent = "🎲 次の問題へ";
+    document.getElementById("sOver").classList.toggle("hidden", !over);
+  }
 
-  document.getElementById("sOver").classList.toggle("hidden", !over);
+  document.getElementById("sNextBtn").style.cssText = dashedBtnStyle(c);
 }
 
 // ── PILLS ────────────────────────────────────────────────────────────
@@ -452,110 +730,97 @@ function renderPills(containerId, activeLevel, onClick) {
   }).join("");
 }
 
-function renderAll() {
-  renderWriting();
-  renderSpeaking();
-}
+function renderAll() { renderWriting(); renderSpeaking(); }
 
 // ── WRITING ACTIONS ──────────────────────────────────────────────────
 function wSetLevel(lv) {
   clearInterval(wTimer); wTimer = null;
-  state.wLevel = lv;
-  state.wTopic = pick(TOPICS[lv]);
-  state.wTimeLeft = WMIN[lv] * 60;
-  state.wRunning = false;
-  // Trigger card animation by re-cloning
-  animateCard("wCard", "popIn");
-  renderWriting();
+  state.wLevel = lv; state.wTopic = pick(TOPICS[lv]);
+  state.wTimeLeft = WMIN[lv] * 60; state.wRunning = false;
+  animateCard("wCard", "popIn"); renderWriting();
 }
-
 function wStart() {
-  state.wRunning = true;
-  clearInterval(wTimer);
+  state.wRunning = true; clearInterval(wTimer);
   wTimer = setInterval(() => {
-    if (state.wTimeLeft <= 1) {
-      clearInterval(wTimer); wTimer = null;
-      state.wTimeLeft = 0;
-      state.wRunning = false;
-    } else {
-      state.wTimeLeft--;
-    }
+    if (state.wTimeLeft <= 1) { clearInterval(wTimer); wTimer = null; state.wTimeLeft = 0; state.wRunning = false; }
+    else { state.wTimeLeft--; }
     renderWriting();
   }, 1000);
   renderWriting();
 }
-
-function wPause() {
-  clearInterval(wTimer); wTimer = null;
-  state.wRunning = false;
-  renderWriting();
-}
-
-function wReset() {
-  clearInterval(wTimer); wTimer = null;
-  state.wTimeLeft = WMIN[state.wLevel] * 60;
-  state.wRunning = false;
-  renderWriting();
-}
-
+function wPause() { clearInterval(wTimer); wTimer = null; state.wRunning = false; renderWriting(); }
+function wReset() { clearInterval(wTimer); wTimer = null; state.wTimeLeft = WMIN[state.wLevel] * 60; state.wRunning = false; renderWriting(); }
 function wNewTopic() {
   clearInterval(wTimer); wTimer = null;
   state.wTopic = pick(TOPICS[state.wLevel], state.wTopic.topic);
-  state.wTimeLeft = WMIN[state.wLevel] * 60;
-  state.wRunning = false;
-  animateCard("wCard", "popIn");
-  renderWriting();
+  state.wTimeLeft = WMIN[state.wLevel] * 60; state.wRunning = false;
+  animateCard("wCard", "popIn"); renderWriting();
 }
 
 // ── SPEAKING ACTIONS ─────────────────────────────────────────────────
 function sSetLevel(lv) {
-  clearInterval(sTimer); sTimer = null;
-  state.sLevel = lv;
-  state.sQ = pick(SPEAKING[lv].questions);
-  state.sRunning = false;
-  state.sElapsed = 0;
-  animateCard("sCard", "slideUp");
+  clearInterval(sTimer); clearInterval(s1PrepTimer); sTimer = null; s1PrepTimer = null;
+  state.sLevel = lv; state.sRunning = false; state.sElapsed = 0;
+  if (lv === "1級") {
+    state.s1Questions = pick5(SPEAKING["1級"].questions);
+    state.s1Selected = null;
+    state.s1PrepLeft = 60;
+    state1PrepStart();
+  } else {
+    state.sQ = pick(SPEAKING[lv].questions);
+    state.s1Selected = null;
+    animateCard("sCard", "slideUp");
+  }
   renderSpeaking();
 }
-
+function state1PrepStart() {
+  state.s1PrepRunning = true;
+  s1PrepTimer = setInterval(() => {
+    if (state.s1PrepLeft <= 1) {
+      clearInterval(s1PrepTimer); s1PrepTimer = null;
+      state.s1PrepLeft = 0; state.s1PrepRunning = false;
+    } else { state.s1PrepLeft--; }
+    renderSpeaking();
+  }, 1000);
+}
+function s1SelectQ(idx) {
+  clearInterval(s1PrepTimer); s1PrepTimer = null;
+  state.s1Selected = state.s1Questions[idx];
+  state.s1PrepRunning = false;
+  state.sQ = state.s1Selected;
+  state.sElapsed = 0; state.sRunning = true;
+  sBase = performance.now();
+  clearInterval(sTimer);
+  sTimer = setInterval(() => { state.sElapsed = performance.now() - sBase; renderSpeaking(); }, 200);
+  renderSpeaking();
+}
 function sStart() {
   state.sRunning = true;
-  sBase = performance.now() - state.sElapsed;
-  clearInterval(sTimer);
-  sTimer = setInterval(() => {
-    state.sElapsed = performance.now() - sBase;
-    renderSpeaking();
-  }, 200);
+  sBase = performance.now() - state.sElapsed; clearInterval(sTimer);
+  sTimer = setInterval(() => { state.sElapsed = performance.now() - sBase; renderSpeaking(); }, 200);
   renderSpeaking();
 }
-
-function sStop() {
-  clearInterval(sTimer); sTimer = null;
-  state.sRunning = false;
-  renderSpeaking();
-}
-
-function sReset() {
-  clearInterval(sTimer); sTimer = null;
-  state.sRunning = false;
-  state.sElapsed = 0;
-  renderSpeaking();
-}
-
+function sStop() { clearInterval(sTimer); sTimer = null; state.sRunning = false; renderSpeaking(); }
+function sReset() { clearInterval(sTimer); sTimer = null; state.sRunning = false; state.sElapsed = 0; renderSpeaking(); }
 function sNewQ() {
-  clearInterval(sTimer); sTimer = null;
-  state.sQ = pick(SPEAKING[state.sLevel].questions, state.sQ.q);
-  state.sRunning = false;
-  state.sElapsed = 0;
-  animateCard("sCard", "slideUp");
+  clearInterval(sTimer); clearInterval(s1PrepTimer); sTimer = null; s1PrepTimer = null;
+  state.sRunning = false; state.sElapsed = 0;
+  if (state.sLevel === "1級") {
+    state.s1Questions = pick5(SPEAKING["1級"].questions);
+    state.s1Selected = null;
+    state.s1PrepLeft = 60;
+    state1PrepStart();
+  } else {
+    state.sQ = pick(SPEAKING[state.sLevel].questions, state.sQ.q);
+    animateCard("sCard", "slideUp");
+  }
   renderSpeaking();
 }
 
 // ── ANIMATION HELPER ─────────────────────────────────────────────────
 function animateCard(id, anim) {
   const el = document.getElementById(id);
-  el.style.animation = "none";
-  el.offsetHeight; // force reflow
+  el.style.animation = "none"; el.offsetHeight;
   el.style.animation = `${anim} 0.35s cubic-bezier(0.34,1.56,0.64,1)`;
 }
 
